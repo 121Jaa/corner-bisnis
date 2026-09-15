@@ -9,14 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('businesses', function (Blueprint $table) {
-            $table->text('google_maps_link')->nullable()->change();
+            $table->decimal('latitude', 10, 7)->nullable()->after('address');
+            $table->decimal('longitude', 10, 7)->nullable()->after('latitude');
         });
     }
 
     public function down(): void
     {
         Schema::table('businesses', function (Blueprint $table) {
-            $table->string('google_maps_link', 1000)->nullable()->change();
+            $table->dropColumn(['latitude', 'longitude']);
         });
     }
 };

@@ -6,7 +6,7 @@
             {{-- LOGO --}}
             <a href="{{ route('home') }}" id="navbar-logo"
                 class="text-xl font-bold tracking-widest text-white transition-colors duration-300">
-                CORNER BISNIS
+                RT 04
             </a>
 
             {{-- DESKTOP NAV --}}

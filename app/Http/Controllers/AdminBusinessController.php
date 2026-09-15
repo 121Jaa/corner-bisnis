@@ -18,7 +18,6 @@ class AdminBusinessController extends Controller
     {
         $categories = Category::all();
         $businesses = Business::select('name', 'category_id')->distinct()->get();
-
         return view('admin.businesses.create', compact('categories', 'businesses'));
     }
 
@@ -30,7 +29,8 @@ class AdminBusinessController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'address' => 'nullable|string|max:500',
-            'google_maps_link' => 'nullable|url',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
             'image' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,avif'
@@ -38,6 +38,11 @@ class AdminBusinessController extends Controller
 
         $data = $request->all();
         unset($data['image']);
+
+        // Auto-generate google_maps_link dari koordinat
+        if (!empty($data['latitude']) && !empty($data['longitude'])) {
+            $data['google_maps_link'] = "https://www.google.com/maps?q={$data['latitude']},{$data['longitude']}";
+        }
 
         if (empty($data['type'])) {
             $data['type'] = $data['name'];
@@ -56,13 +61,11 @@ class AdminBusinessController extends Controller
         return redirect()->route('daftarUsaha')->with('success', 'Usaha berhasil ditambahkan!');
     }
 
-
     public function edit($id)
     {
         $business = Business::findOrFail($id);
         $categories = Category::all();
         $businesses = Business::select('name', 'category_id')->distinct()->get();
-
         return view('admin.businesses.edit', compact('business', 'categories', 'businesses'));
     }
 
@@ -76,7 +79,8 @@ class AdminBusinessController extends Controller
             'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'address' => 'nullable|string|max:500',
-            'google_maps_link' => 'nullable|url',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
             'image' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,avif'
@@ -84,6 +88,11 @@ class AdminBusinessController extends Controller
 
         $data = $request->all();
         unset($data['image']);
+
+        // Auto-generate google_maps_link dari koordinat
+        if (!empty($data['latitude']) && !empty($data['longitude'])) {
+            $data['google_maps_link'] = "https://www.google.com/maps?q={$data['latitude']},{$data['longitude']}";
+        }
 
         if (empty($data['type'])) {
             $data['type'] = $data['name'];
@@ -108,7 +117,6 @@ class AdminBusinessController extends Controller
     {
         $business = Business::findOrFail($id);
 
-        // Hapus gambar jika ada dan bukan default
         if ($business->image && $business->image != '1.avif' && file_exists(public_path('images/' . $business->image))) {
             unlink(public_path('images/' . $business->image));
         }

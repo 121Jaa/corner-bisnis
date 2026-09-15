@@ -260,64 +260,47 @@
 
             if (!iframe || !link) return;
 
-            // Coba ekstrak koordinat dari berbagai format link Google Maps
             let coords = null;
 
-            // Format: @lat,lng,zoom
-            let match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) coords = {
-                lat: match[1],
-                lng: match[2]
-            };
+            // ⭐ PRIORITAS 1: !3dlat!4dlng (PALING AKURAT)
+            let match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+            if (match) coords = { lat: match[1], lng: match[2] };
 
-            // Format: ?q=lat,lng
+            // PRIORITAS 2: ?q=lat,lng
             if (!coords) {
                 match = link.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) coords = {
-                    lat: match[1],
-                    lng: match[2]
-                };
+                if (match) coords = { lat: match[1], lng: match[2] };
             }
 
-            // Format: /place/lat,lng
+            // PRIORITAS 3: /place/lat,lng
             if (!coords) {
                 match = link.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) coords = {
-                    lat: match[1],
-                    lng: match[2]
-                };
+                if (match) coords = { lat: match[1], lng: match[2] };
             }
 
-            // Format: !3dlat!4dlng (format URL panjang)
-            if (!coords) {
-                match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-                if (match) coords = {
-                    lat: match[1],
-                    lng: match[2]
-                };
-            }
-
-            // Format: ll=lat,lng
+            // PRIORITAS 4: ll=lat,lng
             if (!coords) {
                 match = link.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) coords = {
-                    lat: match[1],
-                    lng: match[2]
-                };
+                if (match) coords = { lat: match[1], lng: match[2] };
             }
 
-            // Set iframe src
+            // PRIORITAS 5: @lat,lng (pusat peta, kurang akurat)
+            if (!coords) {
+                match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (match) coords = { lat: match[1], lng: match[2] };
+            }
+
+            console.log('Link:', link);
+            console.log('Coords:', coords);
+
             if (coords) {
-                // Jika ada koordinat → pakai koordinat (paling akurat)
-                iframe.src = `https://www.google.com/maps?q=${coords.lat},${coords.lng}&output=embed&z=17`;
+                iframe.src = `https://www.google.com/maps?q=${coords.lat},${coords.lng}&output=embed&z=18`;
             } else {
-                // Fallback: cari nama tempat di link
                 let placeMatch = link.match(/place\/([^\/@]+)/);
                 if (placeMatch) {
                     const placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
                     iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(placeName)}&output=embed`;
                 } else {
-                    // Fallback terakhir: pakai alamat dari database
                     iframe.src = `https://www.google.com/maps?q={{ urlencode($business->address ?? 'RT 04 Ngijo, Karangploso, Malang') }}&output=embed`;
                 }
             }

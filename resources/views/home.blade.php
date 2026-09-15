@@ -35,9 +35,9 @@
             <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-200">Temukan berbagai usaha dan jasa yang
                 dijalankan oleh warga RT 04 Ngijo.</p>
             <div class="mt-8">
-                <a href="#usaha"
+                <!-- <a href="#usaha"
                     class="inline-block rounded-lg bg-yellow-500 px-6 py-3 font-medium text-white shadow-lg transition hover:bg-yellow-400">Lihat
-                    Usaha Warga</a>
+                    Usaha Warga</a> -->
             </div>
         </div>
     </section>

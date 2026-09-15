@@ -171,4 +171,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/admin/businesses/{id}', [AdminBusinessController::class, 'destroy'])->name('admin.businesses.destroy');
 });
 
+Route::get('/geocode/search', function (\Illuminate\Http\Request $request) {
+    $q = $request->query('q');
+    if (!$q) return response()->json([]);
+
+    $url = 'https://nominatim.openstreetmap.org/search?format=json&q=' . urlencode($q) . '&limit=5&accept-language=id';
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'CornerBisnisRT04/1.0 (cornerbisnis@gmail.com)');
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    return response($response, 200)->header('Content-Type', 'application/json');
+})->name('geocode.search');
+
 require __DIR__ . '/settings.php';

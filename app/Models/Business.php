@@ -16,7 +16,8 @@ class Business extends Model
         'google_maps_link',  // <- ganti dari latitude/longitude
         'phone',
         'facilities',
-        'image'
+        'image',
+        'latitude', 'longitude',
     ];
 
     public function category(): BelongsTo
