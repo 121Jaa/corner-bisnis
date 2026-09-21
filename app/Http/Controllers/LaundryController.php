@@ -32,7 +32,8 @@ class LaundryController extends Controller
         $relatedBusinesses = Business::where('category_id', $business->category_id)
             ->where('name', $business->name)
             ->where('id', '!=', $business->id)
-            ->get();
+            ->inRandomOrder()
+            ->paginate(6);
 
         return view('business-detail', compact('business', 'categories', 'relatedBusinesses'));
     }

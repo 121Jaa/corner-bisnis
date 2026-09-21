@@ -12,9 +12,16 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        #mapPreview { height: 350px; width: 100%; z-index: 1; }
+        #mapPreview {
+            height: 350px;
+            width: 100%;
+            z-index: 1;
+        }
+
         @media (max-width: 768px) {
-            #mapPreview { height: 280px; }
+            #mapPreview {
+                height: 280px;
+            }
         }
     </style>
 </head>
@@ -34,12 +41,14 @@
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
     <div class="min-h-screen flex pt-14 lg:pt-0">
-        <!-- Sidebar -->
+        {{-- Sidebar --}}
         <div id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-gradient-to-b from-[#2B0F1A] to-[#4A1E2B] text-white flex flex-col shadow-2xl z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
             <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
             <div class="relative z-10 p-6 overflow-y-auto h-full">
-                <div class="flex items-center justify-between gap-3 pb-8">
-                    <div class="flex items-center justify-center gap-3">
+
+                {{-- Header --}}
+                <div class="flex items-center justify-between gap-3 pb-6">
+                    <div class="flex items-center gap-3">
                         <svg class="w-10 h-10 lg:w-12 lg:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M3 10v11m18-11v11M9 10V7m3 3V7m3 3V7" />
                         </svg>
@@ -53,31 +62,107 @@
                     </button>
                 </div>
 
-                <div class="space-y-2">
-                    <a href="/" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-home w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Home</span>
-                    </a>
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-chart-pie w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Dashboard</span>
-                    </a>
-                    <a href="{{ route('tambahUsaha') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 bg-white/10 shadow-inner">
-                        <i class="fas fa-plus-circle w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Tambah Usaha</span>
-                    </a>
-                    <a href="{{ route('daftarUsaha') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-list w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Daftar Usaha</span>
-                    </a>
-                    <a href="{{ route('testimoni') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-star w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Testimoni</span>
-                    </a>
-                    <a href="/logout" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-sign-out-alt w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Logout</span>
-                    </a>
+                {{-- USER INFO --}}
+                <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-[#4a1e2b] font-bold text-sm shrink-0">
+                            {{ strtoupper(substr(auth()->user()->display_name ?? auth()->user()->name, 0, 1)) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-white truncate">
+                                {{ auth()->user()->display_name ?? auth()->user()->name }}
+                            </p>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider {{ auth()->user()->role_color }} inline-block px-2 py-0.5 rounded-full border mt-1">
+                                {{ auth()->user()->role_label }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                @php
+                $activeClass = 'bg-white/10 shadow-inner';
+
+                function navClass($patterns, $activeClass) {
+                foreach ((array) $patterns as $pattern) {
+                if (request()->routeIs($pattern) || request()->is($pattern)) {
+                return $activeClass;
+                }
+                }
+                return '';
+                }
+                @endphp
+
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Main</p>
+                        <div class="space-y-1">
+                            <a href="/" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass('home', $activeClass) }}">
+                                <i class="fas fa-home w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Home</span>
+                            </a>
+                            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass('dashboard', $activeClass) }}">
+                                <i class="fas fa-chart-pie w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Dashboard</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Kelola Data</p>
+                        <div class="space-y-1">
+                            <a href="{{ route('tambahUsaha') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('tambahUsaha') || request()->is('admin/businesses/create') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-plus-circle w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Tambah Usaha</span>
+                            </a>
+                            <a href="{{ route('daftarUsaha') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('daftarUsaha') || request()->is('admin/businesses') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-list w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Daftar Usaha</span>
+                            </a>
+                            <a href="{{ route('testimoni') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('testimoni') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-star w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Testimoni</span>
+                            </a>
+                            <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('admin/users*') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-users w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Kelola User</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Konten Web</p>
+                        <div class="space-y-1">
+                            <a href="/admin/hero" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.hero', 'admin.hero.*', 'admin/hero'], $activeClass) }}">
+                                <i class="fas fa-images w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Hero Slideshow</span>
+                            </a>
+                            <a href="/admin/about" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.about', 'admin.about.*', 'admin/about'], $activeClass) }}">
+                                <i class="fas fa-info-circle w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Tentang Kami</span>
+                            </a>
+                            <a href="/admin/stats" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.stats', 'admin.stats.*', 'admin/stats'], $activeClass) }}">
+                                <i class="fas fa-chart-bar w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Statistik</span>
+                            </a>
+                            <a href="/admin/contact" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.contact', 'admin.contact.*', 'admin/contact'], $activeClass) }}">
+                                <i class="fas fa-address-book w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Kontak & Footer</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Sistem</p>
+                        <div class="space-y-1">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 text-red-400 hover:text-red-300">
+                                    <i class="fas fa-sign-out-alt w-5 h-5"></i>
+                                    <span class="text-sm font-semibold">Logout</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -90,6 +175,17 @@
                     <h2 class="font-serif text-2xl lg:text-4xl font-bold text-[#4a1e2b]">Tambah Usaha</h2>
                 </div>
 
+                @if ($errors->any())
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+                    <p class="font-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Ada error:</p>
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
                 <form action="{{ route('admin.businesses.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
@@ -98,6 +194,7 @@
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Kategori</label>
                                 <select name="category_id" id="categorySelect" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]" required>
+                                    <option value="">-- Pilih Kategori --</option>
                                     @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
@@ -106,7 +203,9 @@
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Nama Usaha</label>
-                                <select name="name" id="businessSelect" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]" required></select>
+                                <select name="name" id="businessSelect" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]" required disabled>
+                                    <option value="">-- Pilih Kategori Dulu --</option>
+                                </select>
                             </div>
 
                             <div class="mb-4">
@@ -157,9 +256,22 @@
 
                         <div>
                             <div class="mb-4">
-                                <label class="block text-sm font-medium mb-2">Gambar</label>
-                                <input type="file" name="image" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
-                                <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, JPEG, AVIF. Maks 2MB</p>
+                                <label class="block text-sm font-medium mb-2">Gambar Cover (Utama)</label>
+                                <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <p class="text-xs text-gray-500 mt-1">1 gambar utama. Format: JPG, PNG. Maks 2MB</p>
+                            </div>
+
+                            {{-- ⭐ GALERI DETAIL --}}
+                            <div class="mb-4 p-3 border-2 border-blue-200 bg-blue-50 rounded-lg">
+                                <label class="block text-sm font-medium mb-2">
+                                    <i class="fas fa-images text-blue-500 mr-1"></i>
+                                    Galeri Foto Detail <span class="text-xs text-gray-500">(Max 10 gambar)</span>
+                                </label>
+                                <input type="file" name="images[]" multiple accept="image/*"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Bisa pilih banyak sekaligus (tahan <kbd class="bg-gray-200 px-1 rounded">Ctrl</kbd>). Maks 10 gambar.
+                                </p>
                             </div>
 
                             <div class="mt-4 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
@@ -174,8 +286,8 @@
                                 <div id="mapPreview"></div>
                                 <div class="bg-gray-100 px-4 py-3 text-center">
                                     <a id="openMapsLink" href="#"
-                                       target="_blank"
-                                       class="inline-flex items-center gap-2 text-sm font-semibold text-red-500 hover:underline">
+                                        target="_blank"
+                                        class="inline-flex items-center gap-2 text-sm font-semibold text-red-500 hover:underline">
                                         <i class="fas fa-external-link-alt"></i>
                                         Buka di Google Maps
                                     </a>
@@ -208,8 +320,9 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        // ============= SIDEBAR TOGGLE =============
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -217,10 +330,31 @@
             overlay.classList.toggle('hidden');
         }
 
-        // ============= DROPDOWN KATEGORI =============
-        const categoriesData = @json($businesses->groupBy('category_id')->map(function($items) {
-            return $items->pluck('name')->unique()->values();
-        }));
+        // ============= DATA DROPDOWN =============
+        const businessesData = @json($businesses);
+
+        // ⭐ Group by category_id + unique by name
+        const categoriesData = {};
+        businessesData.forEach(function(biz) {
+            if (!categoriesData[biz.category_id]) {
+                categoriesData[biz.category_id] = [];
+            }
+
+            // Cek apakah name ini udah ada di kategori ini
+            const isDuplicate = categoriesData[biz.category_id].some(function(item) {
+                return item.name === biz.name;
+            });
+
+            // Kalau belum ada, push
+            if (!isDuplicate) {
+                categoriesData[biz.category_id].push({
+                    id: biz.id,
+                    name: biz.name,
+                    type: biz.type,
+                    category_id: biz.category_id,
+                });
+            }
+        });
 
         const categorySelect = document.getElementById('categorySelect');
         const businessSelect = document.getElementById('businessSelect');
@@ -231,17 +365,31 @@
             const selectedCategoryId = categorySelect.value;
             businessSelect.innerHTML = '';
 
-            if (categoriesData[selectedCategoryId]) {
-                categoriesData[selectedCategoryId].forEach(function(name) {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    businessSelect.appendChild(option);
-                });
+            if (!selectedCategoryId) {
+                businessSelect.innerHTML = '<option value="">-- Pilih Kategori Dulu --</option>';
+                businessSelect.disabled = true;
+                return;
             }
+
+            if (!categoriesData[selectedCategoryId] || categoriesData[selectedCategoryId].length === 0) {
+                businessSelect.innerHTML = '<option value="">-- Belum ada usaha di kategori ini --</option>';
+                businessSelect.disabled = true;
+                return;
+            }
+
+            businessSelect.innerHTML = '<option value="">-- Pilih Nama Usaha --</option>';
+
+            categoriesData[selectedCategoryId].forEach(function(biz) {
+                const option = document.createElement('option');
+                option.value = biz.name;
+                option.textContent = biz.name; // ⭐ cuma name
+                businessSelect.appendChild(option);
+            });
+
+            businessSelect.disabled = false;
         }
 
-        // ============= LEAFLET MAP PREVIEW =============
+        // ============= LEAFLET MAP =============
         const defaultLat = -7.8837997;
         const defaultLng = 112.5743297;
 
@@ -260,19 +408,34 @@
             if (!url) return null;
 
             let match = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             return null;
         }
@@ -290,14 +453,11 @@
             const coords = extractCoordsFromLink(link);
 
             if (coords) {
-                console.log('✅ Coords extracted:', coords);
                 mapPreview.invalidateSize();
                 mapPreview.setView([coords.lat, coords.lng], 17);
                 markerPreview.setLatLng([coords.lat, coords.lng]);
-                markerPreview.bindPopup(`📍 ${coords.lat}, ${coords.lng}`).openPopup();
+                markerPreview.bindPopup('📍 ' + coords.lat + ', ' + coords.lng).openPopup();
                 tileLayer.redraw();
-            } else {
-                console.warn('⚠️ No coords found');
             }
         }
 
@@ -312,13 +472,12 @@
 
         markerPreview.on('dragend', function() {
             const pos = markerPreview.getLatLng();
-            const newLink = `https://www.google.com/maps?q=${pos.lat.toFixed(7)},${pos.lng.toFixed(7)}`;
+            const newLink = 'https://www.google.com/maps?q=' + pos.lat.toFixed(7) + ',' + pos.lng.toFixed(7);
             mapsLinkInput.value = newLink;
             openMapsLink.href = newLink;
         });
 
         categorySelect.addEventListener('change', updateBusinesses);
-        updateBusinesses();
     </script>
 
 </body>

@@ -10,17 +10,23 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ini yang bikin akun Admin otomatis
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@cornerbisnis.com',
-            'password' => Hash::make('password'),
-        ]);
+        // ⭐ Akun Admin — updateOrCreate
+        User::updateOrCreate(
+            ['email' => 'admin@cornerbisnis.com'],
+            [
+                'name' => 'admin',
+                'display_name' => 'Administrator RT 04',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'is_active' => true,
+            ]
+        );
 
         $this->call([
             CategorySeeder::class,
             BusinessSeeder::class,
             TestimonialSeeder::class,
+            SiteContentSeeder::class,
         ]);
     }
 }

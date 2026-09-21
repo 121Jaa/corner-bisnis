@@ -12,7 +12,6 @@
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
 
-    <!-- Font Awesome untuk ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -25,7 +24,7 @@
     <!-- Hero Detail Usaha -->
     <section class="relative flex h-[50vh] w-full items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0 bg-cover bg-center"
-            style="background-image: url('{{ $business->image ?? asset('images/1.avif') }}');">
+            style="background-image: url('{{ $business->image ? asset('images/' . $business->image) : asset('images/1.avif') }}');">
             <div class="absolute inset-0 bg-black/70"></div>
         </div>
         <div class="relative z-10 mx-auto max-w-4xl px-6 pt-24 pb-10 text-center text-white">
@@ -51,9 +50,9 @@
                         {{ $business->type ?? $business->name }}
                     </h2>
 
-                    <!-- Gambar -->
+                    <!-- Gambar Cover -->
                     <div class="mt-6 overflow-hidden rounded-xl shadow-lg">
-                        <img src="{{ asset('images/' . $business->image) }}" alt="{{ $business->name }}"
+                        <img src="{{ asset('images/' . ($business->image ?? '1.avif')) }}" alt="{{ $business->name }}"
                             class="h-80 w-full object-cover">
                     </div>
 
@@ -61,7 +60,7 @@
                         {{ $business->description ?? 'Deskripsi singkat usaha ini akan segera ditambahkan.' }}
                     </p>
 
-                    <!-- LOKASI DENGAN ICON MAPS -->
+                    <!-- LOKASI -->
                     <div class="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
                         <div class="flex items-start gap-3">
                             <i class="fas fa-map-pin text-xl text-red-500 mt-1"></i>
@@ -69,8 +68,7 @@
                                 <p class="font-semibold text-gray-700">Lokasi</p>
                                 <p class="text-gray-600">{{ $business->address ?? 'RT 04 Ngijo, Karangploso, Malang' }}</p>
                                 @if ($business->google_maps_link)
-                                <a href="{{ $business->google_maps_link }}"
-                                    target="_blank"
+                                <a href="{{ $business->google_maps_link }}" target="_blank"
                                     class="mt-1 inline-flex items-center gap-1 text-sm text-red-500 hover:underline">
                                     <i class="fas fa-external-link-alt text-xs"></i>
                                     Lihat di Google Maps
@@ -87,7 +85,7 @@
                         </div>
                     </div>
 
-                    <!-- KONTAK DENGAN ICON WHATSAPP -->
+                    <!-- KONTAK -->
                     <div class="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                         <div class="flex items-start gap-3">
                             <i class="fab fa-whatsapp text-xl text-green-500 mt-1"></i>
@@ -104,7 +102,7 @@
                         </div>
                     </div>
 
-                    <!-- Fasilitas / Menu sesuai database -->
+                    <!-- Fasilitas / Menu -->
                     @if ($business->facilities)
                     <div class="mt-6 rounded-xl border border-gray-200 p-4">
                         <p class="font-semibold text-gray-700">Fasilitas / Menu:</p>
@@ -118,9 +116,61 @@
                         </div>
                     </div>
                     @endif
+
+                    {{-- ⭐ GALERI — ANTI ERROR --}}
+                    @php
+                        // Ambil data mentah
+                        $rawImages = $business->images;
+
+                        // Kalau string, decode
+                        if (is_string($rawImages)) {
+                            $decoded = json_decode($rawImages, true);
+                            $rawImages = is_array($decoded) ? $decoded : [];
+                        }
+
+                        // Kalau bukan array, jadi []
+                        if (!is_array($rawImages)) {
+                            $rawImages = [];
+                        }
+
+                        // Flatten + filter cuma string
+                        $galeriImages = [];
+                        $queue = $rawImages;
+                        while (!empty($queue)) {
+                            $item = array_shift($queue);
+                            if (is_array($item)) {
+                                $queue = array_merge($queue, $item);
+                            } elseif (is_string($item) && trim($item) !== '' && file_exists(public_path($item))) {
+                                $galeriImages[] = $item;
+                            }
+                        }
+                    @endphp
+
+                    @if (count($galeriImages) > 0)
+                    <div class="mt-6 rounded-xl border border-gray-200 p-4">
+                        <p class="font-semibold text-gray-700 mb-3">
+                            <i class="fas fa-images text-[#4a1e2b] mr-2"></i> Galeri Foto
+                            <span class="text-xs text-gray-500">({{ count($galeriImages) }} gambar)</span>
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            @foreach ($galeriImages as $index => $img)
+                                @if (is_string($img))
+                                <div class="relative group cursor-pointer overflow-hidden rounded-lg border border-gray-200"
+                                    onclick="openLightbox('{{ asset($img) }}', {{ $index }})">
+                                    <img src="{{ asset($img) }}" alt="Foto {{ $index + 1 }}"
+                                        class="w-full h-32 md:h-40 object-cover transition-transform duration-300 group-hover:scale-110">
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                                        <i class="fas fa-search-plus text-white text-2xl opacity-0 group-hover:opacity-100 transition"></i>
+                                    </div>
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
-                <!-- Kolom Kanan: Google Maps dengan Marker dari Link -->
+                <!-- Kolom Kanan: Google Maps -->
                 <div class="lg:mt-0">
                     <div class="sticky top-24 overflow-hidden rounded-2xl shadow-lg">
                         <div class="bg-gray-900 px-4 py-3">
@@ -129,46 +179,29 @@
                             </h3>
                         </div>
 
-                        <!-- Google Maps dari Link yang Disimpan Admin -->
                         @if ($business->google_maps_link)
-                        <iframe
-                            id="detailMapIframe"
-                            src=""
-                            width="100%"
-                            height="550"
-                            style="border:0;"
-                            allowfullscreen=""
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade"
-                            class="h-full min-h-[500px] w-full">
-                        </iframe>
+                        <iframe id="detailMapIframe" src="" width="100%" height="550" style="border:0;"
+                            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                            class="h-full min-h-[500px] w-full"></iframe>
 
                         <div class="bg-gray-100 px-4 py-3 text-center flex flex-wrap items-center justify-center gap-3">
-                            <a href="{{ $business->google_maps_link }}"
-                                target="_blank"
+                            <a href="{{ $business->google_maps_link }}" target="_blank"
                                 class="inline-flex items-center gap-2 text-sm font-semibold text-red-500 hover:underline">
                                 <i class="fas fa-external-link-alt"></i>
                                 Buka di Google Maps
                             </a>
                             <span class="text-gray-300">|</span>
-                            <a href="{{ $business->google_maps_link }}&destination_place_id="
-                                target="_blank"
+                            <a href="{{ $business->google_maps_link }}&destination_place_id=" target="_blank"
                                 class="inline-flex items-center gap-2 text-sm font-semibold text-blue-500 hover:underline">
                                 <i class="fas fa-directions"></i>
                                 Petunjuk Arah
                             </a>
                         </div>
                         @else
-                        {{-- Fallback jika admin belum isi link Google Maps --}}
                         <iframe
                             src="https://www.google.com/maps?q={{ urlencode($business->address ?? 'RT 04 Ngijo, Karangploso, Malang') }}&output=embed&z=15"
-                            width="100%"
-                            height="550"
-                            style="border:0;"
-                            allowfullscreen=""
-                            loading="lazy"
-                            class="h-full min-h-[500px] w-full">
-                        </iframe>
+                            width="100%" height="550" style="border:0;" allowfullscreen="" loading="lazy"
+                            class="h-full min-h-[500px] w-full"></iframe>
 
                         <div class="bg-gray-100 px-4 py-3 text-center">
                             <a href="https://www.google.com/maps/search/{{ urlencode($business->address ?? 'RT 04 Ngijo, Karangploso, Malang') }}"
@@ -196,7 +229,7 @@
     };
     @endphp
 
-    <!-- SECTION: USAHA LAINNYA (RELATED PRODUCTS) -->
+    <!-- SECTION: USAHA LAINNYA -->
     <section class="bg-gray-50 py-24">
         <div class="mx-auto max-w-7xl px-6">
             <div class="mb-12 text-center">
@@ -217,7 +250,7 @@
                 <a href="{{ route('kos.show', $item->id) }}"
                     class="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
                     <div class="relative h-64 overflow-hidden">
-                        <img src="{{ asset('images/' . $item->image) }}" alt="{{ $item->name }}"
+                        <img src="{{ asset('images/' . ($item->image ?? '1.avif')) }}" alt="{{ $item->name }}"
                             class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110">
                         <div
                             class="absolute top-4 right-4 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-md">
@@ -230,7 +263,6 @@
                             {{ $item->description ?? 'Deskripsi singkat usaha ini akan segera ditambahkan.' }}
                         </p>
 
-                        <!-- Lokasi -->
                         <div class="mt-2 flex items-center gap-1 text-sm text-gray-500">
                             <i class="fas fa-map-pin text-red-500"></i>
                             <span>{{ $item->address ?? 'RT 04 Ngijo, Karangploso, Malang' }}</span>
@@ -249,10 +281,34 @@
                 </div>
                 @endforelse
             </div>
+
+            {{-- PAGINATION --}}
+            @if ($relatedBusinesses->hasPages())
+            <div class="mt-12 flex justify-center">
+                {{ $relatedBusinesses->links() }}
+            </div>
+            @endif
         </div>
     </section>
 
-    <!-- Script Auto-Embed Google Maps dari Link -->
+    <!-- ⭐ LIGHTBOX MODAL -->
+    <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4" onclick="closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <button onclick="event.stopPropagation(); prevImage()" class="absolute left-4 text-white text-4xl hover:text-gray-300 z-10">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <img id="lightboxImage" src="" class="max-w-full max-h-full object-contain rounded-lg" onclick="event.stopPropagation()">
+        <button onclick="event.stopPropagation(); nextImage()" class="absolute right-4 text-white text-4xl hover:text-gray-300 z-10">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm">
+            <span id="lightboxCounter"></span>
+        </div>
+    </div>
+
+    <!-- Script Auto-Embed Google Maps + Lightbox -->
     <script>
         (function() {
             const link = @json($business->google_maps_link ?? null);
@@ -262,49 +318,115 @@
 
             let coords = null;
 
-            // ⭐ PRIORITAS 1: !3dlat!4dlng (PALING AKURAT)
             let match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
             if (match) coords = { lat: match[1], lng: match[2] };
 
-            // PRIORITAS 2: ?q=lat,lng
             if (!coords) {
                 match = link.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
                 if (match) coords = { lat: match[1], lng: match[2] };
             }
 
-            // PRIORITAS 3: /place/lat,lng
             if (!coords) {
                 match = link.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
                 if (match) coords = { lat: match[1], lng: match[2] };
             }
 
-            // PRIORITAS 4: ll=lat,lng
             if (!coords) {
                 match = link.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
                 if (match) coords = { lat: match[1], lng: match[2] };
             }
 
-            // PRIORITAS 5: @lat,lng (pusat peta, kurang akurat)
             if (!coords) {
                 match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
                 if (match) coords = { lat: match[1], lng: match[2] };
             }
 
-            console.log('Link:', link);
-            console.log('Coords:', coords);
-
             if (coords) {
-                iframe.src = `https://www.google.com/maps?q=${coords.lat},${coords.lng}&output=embed&z=18`;
+                iframe.src = 'https://www.google.com/maps?q=' + coords.lat + ',' + coords.lng + '&output=embed&z=18';
             } else {
                 let placeMatch = link.match(/place\/([^\/@]+)/);
                 if (placeMatch) {
                     const placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
-                    iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(placeName)}&output=embed`;
+                    iframe.src = 'https://www.google.com/maps?q=' + encodeURIComponent(placeName) + '&output=embed';
                 } else {
-                    iframe.src = `https://www.google.com/maps?q={{ urlencode($business->address ?? 'RT 04 Ngijo, Karangploso, Malang') }}&output=embed`;
+                    iframe.src = 'https://www.google.com/maps?q={{ urlencode($business->address ?? 'RT 04 Ngijo, Karangploso, Malang') }}&output=embed';
                 }
             }
         })();
+
+        // ⭐ GALERI LIGHTBOX — HANDLE SEMUA TIPE
+        @php
+            $rawForJs = $business->images;
+            if (is_string($rawForJs)) {
+                $decoded = json_decode($rawForJs, true);
+                $rawForJs = is_array($decoded) ? $decoded : [];
+            }
+            if (!is_array($rawForJs)) $rawForJs = [];
+
+            $flatForJs = [];
+            $queue = $rawForJs;
+            while (!empty($queue)) {
+                $item = array_shift($queue);
+                if (is_array($item)) {
+                    $queue = array_merge($queue, $item);
+                } elseif (is_string($item) && trim($item) !== '' && file_exists(public_path($item))) {
+                    $flatForJs[] = $item;
+                }
+            }
+
+            $jsImages = array_map(function($i) {
+                return asset($i);
+            }, $flatForJs);
+        @endphp
+        const galleryImages = @json($jsImages);
+        let currentIndex = 0;
+
+        function openLightbox(imgSrc, index) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightboxImage');
+            img.src = imgSrc;
+            currentIndex = index;
+            lb.classList.remove('hidden');
+            lb.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            updateCounter();
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.add('hidden');
+            lb.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        function nextImage() {
+            if (galleryImages.length === 0) return;
+            currentIndex = (currentIndex + 1) % galleryImages.length;
+            document.getElementById('lightboxImage').src = galleryImages[currentIndex];
+            updateCounter();
+        }
+
+        function prevImage() {
+            if (galleryImages.length === 0) return;
+            currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+            document.getElementById('lightboxImage').src = galleryImages[currentIndex];
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const counter = document.getElementById('lightboxCounter');
+            if (counter) {
+                counter.textContent = (currentIndex + 1) + ' / ' + galleryImages.length;
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            const lb = document.getElementById('lightbox');
+            if (!lb || lb.classList.contains('hidden')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft') prevImage();
+        });
     </script>
 
 </body>

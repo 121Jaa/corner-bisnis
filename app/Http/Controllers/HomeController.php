@@ -10,7 +10,7 @@ class HomeController extends Controller
     public function index()
     {
         $categories = Category::with('businesses')->get();
-        $businesses = Business::latest()->take(3)->get();
+        $businesses = Business::inRandomOrder()->take(6)->get();  // ⭐ 6 di homepage
 
         // Ambil SEMUA testimoni (jamak)
         $testimonials = \App\Models\Testimonial::all();
@@ -24,11 +24,11 @@ class HomeController extends Controller
 
     public function allBusinesses()
     {
-        // Tambahkan $categories di sini
-        $categories = Category::with('businesses')->get();
-        $businesses = Business::all();
+        $businesses = \App\Models\Business::with('category')
+            ->inRandomOrder()
+            ->paginate(9);  // ⭐ 9 per halaman di /usaha
 
-        return view('all-businesses', compact('categories', 'businesses'));
+        return view('all-businesses', compact('businesses'));
     }
 
     public function showBusiness($id)

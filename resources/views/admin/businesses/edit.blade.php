@@ -12,9 +12,16 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        #mapPreview { height: 350px; width: 100%; z-index: 1; }
+        #mapPreview {
+            height: 350px;
+            width: 100%;
+            z-index: 1;
+        }
+
         @media (max-width: 768px) {
-            #mapPreview { height: 280px; }
+            #mapPreview {
+                height: 280px;
+            }
         }
     </style>
 </head>
@@ -34,12 +41,14 @@
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
     <div class="min-h-screen flex pt-14 lg:pt-0">
-        <!-- Sidebar -->
+        {{-- Sidebar --}}
         <div id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-gradient-to-b from-[#2B0F1A] to-[#4A1E2B] text-white flex flex-col shadow-2xl z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
             <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
             <div class="relative z-10 p-6 overflow-y-auto h-full">
-                <div class="flex items-center justify-between gap-3 pb-8">
-                    <div class="flex items-center justify-center gap-3">
+
+                {{-- Header --}}
+                <div class="flex items-center justify-between gap-3 pb-6">
+                    <div class="flex items-center gap-3">
                         <svg class="w-10 h-10 lg:w-12 lg:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M3 10v11m18-11v11M9 10V7m3 3V7m3 3V7" />
                         </svg>
@@ -53,31 +62,107 @@
                     </button>
                 </div>
 
-                <div class="space-y-2">
-                    <a href="/" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-home w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Home</span>
-                    </a>
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-chart-pie w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Dashboard</span>
-                    </a>
-                    <a href="{{ route('tambahUsaha') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-plus-circle w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Tambah Usaha</span>
-                    </a>
-                    <a href="{{ route('daftarUsaha') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 bg-white/10 shadow-inner">
-                        <i class="fas fa-list w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Daftar Usaha</span>
-                    </a>
-                    <a href="{{ route('testimoni') }}" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-star w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Testimoni</span>
-                    </a>
-                    <a href="/logout" class="flex items-center gap-3 py-3 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1">
-                        <i class="fas fa-sign-out-alt w-5 h-5"></i>
-                        <span class="text-sm font-semibold">Logout</span>
-                    </a>
+                {{-- USER INFO --}}
+                <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-[#4a1e2b] font-bold text-sm shrink-0">
+                            {{ strtoupper(substr(auth()->user()->display_name ?? auth()->user()->name, 0, 1)) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-white truncate">
+                                {{ auth()->user()->display_name ?? auth()->user()->name }}
+                            </p>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider {{ auth()->user()->role_color }} inline-block px-2 py-0.5 rounded-full border mt-1">
+                                {{ auth()->user()->role_label }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                @php
+                $activeClass = 'bg-white/10 shadow-inner';
+
+                function navClass($patterns, $activeClass) {
+                    foreach ((array) $patterns as $pattern) {
+                        if (request()->routeIs($pattern) || request()->is($pattern)) {
+                            return $activeClass;
+                        }
+                    }
+                    return '';
+                }
+                @endphp
+
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Main</p>
+                        <div class="space-y-1">
+                            <a href="/" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass('home', $activeClass) }}">
+                                <i class="fas fa-home w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Home</span>
+                            </a>
+                            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass('dashboard', $activeClass) }}">
+                                <i class="fas fa-chart-pie w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Dashboard</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Kelola Data</p>
+                        <div class="space-y-1">
+                            <a href="{{ route('tambahUsaha') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('tambahUsaha') || request()->is('admin/businesses/create') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-plus-circle w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Tambah Usaha</span>
+                            </a>
+                            <a href="{{ route('daftarUsaha') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('daftarUsaha') || request()->is('admin/businesses') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-list w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Daftar Usaha</span>
+                            </a>
+                            <a href="{{ route('testimoni') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('testimoni') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-star w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Testimoni</span>
+                            </a>
+                            <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('admin/users*') ? 'bg-white/10 shadow-inner' : '' }}">
+                                <i class="fas fa-users w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Kelola User</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Konten Web</p>
+                        <div class="space-y-1">
+                            <a href="/admin/hero" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.hero', 'admin.hero.*', 'admin/hero'], $activeClass) }}">
+                                <i class="fas fa-images w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Hero Slideshow</span>
+                            </a>
+                            <a href="/admin/about" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.about', 'admin.about.*', 'admin/about'], $activeClass) }}">
+                                <i class="fas fa-info-circle w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Tentang Kami</span>
+                            </a>
+                            <a href="/admin/stats" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.stats', 'admin.stats.*', 'admin/stats'], $activeClass) }}">
+                                <i class="fas fa-chart-bar w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Statistik</span>
+                            </a>
+                            <a href="/admin/contact" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ navClass(['admin.contact', 'admin.contact.*', 'admin/contact'], $activeClass) }}">
+                                <i class="fas fa-address-book w-5 h-5"></i>
+                                <span class="text-sm font-semibold">Kontak & Footer</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs uppercase tracking-widest opacity-40 px-4 mb-2">Sistem</p>
+                        <div class="space-y-1">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 text-red-400 hover:text-red-300">
+                                    <i class="fas fa-sign-out-alt w-5 h-5"></i>
+                                    <span class="text-sm font-semibold">Logout</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -89,6 +174,12 @@
                     <p class="text-xs lg:text-sm uppercase tracking-[0.3em] text-gray-400">Manage</p>
                     <h2 class="font-serif text-2xl lg:text-4xl font-bold text-[#4a1e2b]">Edit Usaha</h2>
                 </div>
+
+                @php
+                    $galeriImages = $business->images;
+                    if (!is_array($galeriImages)) $galeriImages = [];
+                    $galeriImages = array_values(array_filter($galeriImages, fn($i) => is_string($i) && $i !== ''));
+                @endphp
 
                 <form action="{{ route('admin.businesses.update', $business->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -169,9 +260,65 @@
                             </div>
 
                             <div class="mb-4">
-                                <label class="block text-sm font-medium mb-2">Gambar Baru</label>
-                                <input type="file" name="image" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <label class="block text-sm font-medium mb-2">Gambar Cover Baru (Kosongkan jika tidak diganti)</label>
+                                <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                             </div>
+
+                            {{-- ⭐ GALERI DETAIL — DI DALAM FORM UPDATE --}}
+                            <div class="mb-4 p-3 border-2 border-blue-200 bg-blue-50 rounded-lg">
+                                <label class="block text-sm font-medium mb-2">
+                                    <i class="fas fa-images text-blue-500 mr-1"></i>
+                                    Galeri Foto Detail
+                                    @if (count($galeriImages) > 0)
+                                    <span class="text-xs text-gray-500">({{ count($galeriImages) }}/10 gambar)</span>
+                                    @else
+                                    <span class="text-xs text-gray-500">(Max 10 gambar)</span>
+                                    @endif
+                                </label>
+
+                                @if (count($galeriImages) > 0)
+                                <div class="mb-3">
+                                    <p class="text-xs font-semibold text-gray-700 mb-2">
+                                        <i class="fas fa-check-circle text-green-500 mr-1"></i> Galeri saat ini:
+                                    </p>
+                                    <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
+                                        @foreach ($galeriImages as $index => $img)
+                                        <div class="relative group rounded-lg overflow-hidden border-2 border-gray-300 hover:border-red-400 transition bg-white">
+                                            <img src="{{ asset($img) }}" class="w-full h-24 object-cover">
+
+                                            {{-- ✅ TOMBOL HAPUS — cuma button, form-nya di luar --}}
+                                            <button type="submit"
+                                                form="removeImageForm{{ $index }}"
+                                                onclick="return confirm('Hapus gambar ini?')"
+                                                class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition z-10 cursor-pointer">
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Hover gambar → klik tombol 🗑️ buat hapus.
+                                    </p>
+                                </div>
+                                @else
+                                <div class="mb-3 p-3 bg-white rounded-lg border border-dashed border-blue-300 text-center">
+                                    <i class="fas fa-images text-blue-300 text-2xl mb-1"></i>
+                                    <p class="text-xs text-gray-500">Belum ada galeri foto</p>
+                                </div>
+                                @endif
+
+                                {{-- Upload galeri baru --}}
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                    Tambah Gambar Baru:
+                                </label>
+                                <input type="file" name="images[]" multiple accept="image/*"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Bisa pilih banyak sekaligus. Max total 10 gambar.
+                                </p>
+                            </div>
+                            {{-- ⭐ END GALERI --}}
 
                             <div class="mt-4 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                                 <div class="bg-gray-900 px-4 py-3 flex justify-between items-center">
@@ -185,8 +332,8 @@
                                 <div id="mapPreview"></div>
                                 <div class="bg-gray-100 px-4 py-3 text-center">
                                     <a id="openMapsLink" href="{{ $business->google_maps_link ?? '#' }}"
-                                       target="_blank"
-                                       class="inline-flex items-center gap-2 text-sm font-semibold text-red-500 hover:underline">
+                                        target="_blank"
+                                        class="inline-flex items-center gap-2 text-sm font-semibold text-red-500 hover:underline">
                                         <i class="fas fa-external-link-alt"></i>
                                         Buka di Google Maps
                                     </a>
@@ -218,6 +365,20 @@
                         </button>
                     </div>
                 </form>
+
+                {{-- ═══════════════════════════════════════════
+                    FORM HAPUS GALERI — DI LUAR FORM UPDATE
+                    ═══════════════════════════════════════════ --}}
+                @foreach ($galeriImages as $index => $img)
+                <form id="removeImageForm{{ $index }}"
+                    action="{{ route('admin.businesses.remove-image', $business->id) }}"
+                    method="POST"
+                    style="display:none;">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="image_path" value="{{ $img }}">
+                </form>
+                @endforeach
             </div>
         </div>
     </div>
@@ -226,7 +387,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // ============= SIDEBAR TOGGLE =============
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -235,9 +395,26 @@
         }
 
         // ============= DROPDOWN KATEGORI =============
-        const categoriesData = @json($businesses->groupBy('category_id')->map(function($items) {
-            return $items->pluck('name')->unique()->values();
-        }));
+        const businessesData = @json($businesses);
+
+        const categoriesData = {};
+        businessesData.forEach(function(biz) {
+            if (!categoriesData[biz.category_id]) {
+                categoriesData[biz.category_id] = [];
+            }
+
+            const isDuplicate = categoriesData[biz.category_id].some(function(item) {
+                return item.name === biz.name;
+            });
+
+            if (!isDuplicate) {
+                categoriesData[biz.category_id].push({
+                    id: biz.id,
+                    name: biz.name,
+                    category_id: biz.category_id,
+                });
+            }
+        });
 
         const categorySelect = document.getElementById('categorySelect');
         const businessSelect = document.getElementById('businessSelect');
@@ -249,13 +426,15 @@
             businessSelect.innerHTML = '';
 
             if (categoriesData[selectedCategoryId]) {
-                categoriesData[selectedCategoryId].forEach(function(name) {
+                categoriesData[selectedCategoryId].forEach(function(biz) {
                     const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    if (name === '{{ $business->name }}') {
+                    option.value = biz.name;
+                    option.textContent = biz.name;
+
+                    if (biz.name === '{{ $business->name }}') {
                         option.selected = true;
                     }
+
                     businessSelect.appendChild(option);
                 });
             }
@@ -310,14 +489,11 @@
             const coords = extractCoordsFromLink(link);
 
             if (coords) {
-                console.log('✅ Coords extracted:', coords);
                 mapPreview.invalidateSize();
                 mapPreview.setView([coords.lat, coords.lng], 17);
                 markerPreview.setLatLng([coords.lat, coords.lng]);
-                markerPreview.bindPopup(`📍 ${coords.lat}, ${coords.lng}`).openPopup();
+                markerPreview.bindPopup('📍 ' + coords.lat + ', ' + coords.lng).openPopup();
                 tileLayer.redraw();
-            } else {
-                console.warn('⚠️ No coords found');
             }
         }
 
@@ -332,7 +508,7 @@
 
         markerPreview.on('dragend', function() {
             const pos = markerPreview.getLatLng();
-            const newLink = `https://www.google.com/maps?q=${pos.lat.toFixed(7)},${pos.lng.toFixed(7)}`;
+            const newLink = 'https://www.google.com/maps?q=' + pos.lat.toFixed(7) + ',' + pos.lng.toFixed(7);
             mapsLinkInput.value = newLink;
             openMapsLink.href = newLink;
         });

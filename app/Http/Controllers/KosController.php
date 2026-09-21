@@ -36,12 +36,47 @@ class KosController extends Controller
         $business = Business::findOrFail($id);
         $categories = Category::with('businesses')->get();
 
-        // Ambil semua kos dengan kategori yang sama, TAPI hanya yang namanya sama, dan kecuali kos yang sedang dibuka
         $relatedBusinesses = Business::where('category_id', $business->category_id)
             ->where('name', $business->name)
             ->where('id', '!=', $business->id)
-            ->get();
+            ->inRandomOrder()
+            ->paginate(6);
 
         return view('business-detail', compact('business', 'categories', 'relatedBusinesses'));
+    }
+
+    public function showByCategory($slug)
+    {
+        $category = \App\Models\Category::where('slug', $slug)->firstOrFail();
+
+        $businesses = \App\Models\Business::where('category_id', $category->id)
+            ->with('category')
+            ->inRandomOrder()
+            ->paginate(9);
+
+        // ⭐ Pilih view berdasarkan slug
+        $viewName = match ($slug) {
+            'kos' => 'kos',
+            'kuliner' => 'kuliner',
+            'laundry' => 'laundry',
+            'jasa' => 'jasa',
+            'toko' => 'toko',
+            default => 'kategori',
+        };
+
+        // ⭐ Nama variabel yang dikirim ke view beda-beda
+        $dataVar = match ($slug) {
+            'kos' => 'kos',
+            'kuliner' => 'kuliner',
+            'laundry' => 'laundry',
+            'jasa' => 'jasa',
+            'toko' => 'toko',
+            default => 'businesses',
+        };
+
+        return view($viewName, [
+            'category' => $category,
+            $dataVar => $businesses,
+        ]);
     }
 }
