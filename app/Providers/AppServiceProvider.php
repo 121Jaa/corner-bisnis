@@ -17,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // ⭐ Blade directive @active — auto-detect active menu
+        // ⭐ Blade directive @active
         Blade::directive('active', function ($expression) {
             return "<?php 
                 \$patterns = $expression;
@@ -32,22 +32,14 @@ class AppServiceProvider extends ServiceProvider
             ?>";
         });
 
-        // ⭐ Share $categories ke SEMUA view (untuk navbar)
-        //    Dibungkus try-catch agar kalau DB bermasalah,
-        //    halaman error tetap bisa dirender & error asli terlihat.
+        // ⭐ Share $categories ke semua view — DENGAN TRY-CATCH
         View::composer('*', function ($view) {
             try {
                 $categories = \App\Models\Category::with('businesses')->get();
             } catch (Throwable $e) {
-                // Jangan crash — kirim koleksi kosong agar view tetap render
                 $categories = collect();
-
-                // Log supaya kita tahu penyebab sebenarnya (muncul di Vercel Runtime Logs)
-                Log::error('Gagal memuat categories untuk navbar: ' . $e->getMessage(), [
-                    'exception' => $e,
-                ]);
+                Log::error('Gagal load categories: ' . $e->getMessage());
             }
-
             $view->with('categories', $categories);
         });
     }
