@@ -18,18 +18,15 @@ Route::get('/kos/putra', [KosController::class, 'putra'])->name('kos.putra');
 Route::get('/kos/putri', [KosController::class, 'putri'])->name('kos.putri');
 Route::get('/kos/{id}', [KosController::class, 'show'])->name('kos.show');
 
-// Rute Kuliner
 Route::get('/kuliner', [KulinerController::class, 'index'])->name('kuliner');
 Route::get('/kuliner/warung-makan', [KulinerController::class, 'warungMakan'])->name('kuliner.warungMakan');
 Route::get('/kuliner/cafe', [KulinerController::class, 'cafe'])->name('kuliner.cafe');
 Route::get('/kuliner/warmindo', [KulinerController::class, 'warmindo'])->name('kuliner.warmindo');
 Route::get('/kuliner/{id}', [KulinerController::class, 'show'])->name('kuliner.show');
 
-// Rute Laundry
 Route::get('/laundry', [LaundryController::class, 'index'])->name('laundry');
 Route::get('/laundry/{id}', [LaundryController::class, 'show'])->name('laundry.show');
 
-// Rute Jasa
 Route::get('/jasa', [JasaController::class, 'index'])->name('jasa');
 Route::get('/jasa/travel', [JasaController::class, 'travel'])->name('jasa.travel');
 Route::get('/jasa/tukang', [JasaController::class, 'tukang'])->name('jasa.tukang');
@@ -37,7 +34,6 @@ Route::get('/jasa/cat', [JasaController::class, 'cat'])->name('jasa.cat');
 Route::get('/jasa/sumur', [JasaController::class, 'sumur'])->name('jasa.sumur');
 Route::get('/jasa/{id}', [JasaController::class, 'show'])->name('jasa.show');
 
-// Rute Toko
 Route::get('/toko', [TokoController::class, 'index'])->name('toko');
 Route::get('/toko/plastik', [TokoController::class, 'plastik'])->name('toko.plastik');
 Route::get('/toko/buah', [TokoController::class, 'buah'])->name('toko.buah');
@@ -103,7 +99,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             'name' => 'required',
             'content' => 'required',
             'rating' => 'required|integer|min:1|max:5',
-            'image' => 'nullable|file|max:2048'
+            'image' => 'nullable|file|max:10240'
         ]);
 
         $data = $request->all();
@@ -131,7 +127,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             'name' => 'required',
             'content' => 'required',
             'rating' => 'required|integer|min:1|max:5',
-            'image' => 'nullable|file|max:2048'
+            'image' => 'nullable|file|max:10240'
         ]);
 
         $data = $request->all();
@@ -266,7 +262,6 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             return back()->with('error', 'Gambar tidak valid.');
         }
 
-        // Hapus file
         $paths = [
             public_path($imgPath),
             public_path('images/' . basename($imgPath)),
@@ -278,7 +273,6 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             }
         }
 
-        // Hapus dari array
         $current = $business->images;
         if (!is_array($current)) $current = [];
         $current = array_values(array_filter($current, function($i) use ($imgPath) {
@@ -291,30 +285,47 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         return back()->with('success', 'Gambar berhasil dihapus!');
     })->name('admin.businesses.remove-image');
 
-    // ---------- KONTEN WEB (DINAMIS) ----------
+    // ==================== KONTEN WEB (DINAMIS) ====================
     Route::prefix('admin')->name('admin.')->group(function () {
 
+        // ---------- HERO ----------
         Route::get('/hero', function () {
             $heroImages = \App\Models\SiteContent::getJson('hero_slides', []);
+            if (!is_array($heroImages)) $heroImages = [];
             return view('admin.hero.index', compact('heroImages'));
         })->name('hero');
 
+        // ========== SIMPAN TEXT HERO + LOGO NAVBAR ==========
         Route::post('/hero/text', function (\Illuminate\Http\Request $request) {
-            \App\Models\SiteContent::set('hero_badge', $request->hero_badge);
-            \App\Models\SiteContent::set('hero_title', $request->hero_title);
-            \App\Models\SiteContent::set('hero_subtitle', $request->hero_subtitle);
+            $request->validate([
+                'hero_badge'         => 'nullable|string|max:255',
+                'hero_title'         => 'nullable|string|max:500',
+                'hero_subtitle'      => 'nullable|string|max:1000',
+                'navbar_logo_type'   => 'nullable|in:text,image',
+                'navbar_logo_text'   => 'nullable|string|max:100',
+                'navbar_logo_image'  => 'nullable|file|max:10240|mimes:jpg,jpeg,png,svg,webp,avif',
+            ], [
+                'navbar_logo_image.max'   => 'Logo maksimal 10MB.',
+                'navbar_logo_image.mimes' => 'Format logo harus JPG, JPEG, PNG, SVG, WebP, atau AVIF.',
+            ]);
+
+            \App\Models\SiteContent::set('hero_badge', $request->hero_badge ?? '');
+            \App\Models\SiteContent::set('hero_title', $request->hero_title ?? '');
+            \App\Models\SiteContent::set('hero_subtitle', $request->hero_subtitle ?? '');
 
             \App\Models\SiteContent::set('navbar_logo_type', $request->navbar_logo_type ?? 'text');
             \App\Models\SiteContent::set('navbar_logo_text', $request->navbar_logo_text ?? 'RT 04');
 
-            if ($request->hasFile('navbar_logo_image')) {
+            if ($request->hasFile('navbar_logo_image') && $request->file('navbar_logo_image')->isValid()) {
                 $oldLogo = \App\Models\SiteContent::get('navbar_logo_image');
                 if ($oldLogo && file_exists(public_path($oldLogo))) {
                     @unlink(public_path($oldLogo));
                 }
 
                 $file = $request->file('navbar_logo_image');
-                $filename = time() . '_logo_' . $file->getClientOriginalName();
+                $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+                $filename = time() . '_logo_' . uniqid() . '.' . $ext;
+
                 $file->move(public_path('images'), $filename);
                 \App\Models\SiteContent::set('navbar_logo_image', 'images/' . $filename, 'image');
             }
@@ -322,15 +333,36 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             return back()->with('success', 'Text hero & Logo navbar berhasil diupdate!');
         })->name('hero.text');
 
+        // ========== UPLOAD GAMBAR SLIDESHOW ==========
         Route::post('/hero/add', function (\Illuminate\Http\Request $request) {
             $request->validate([
-                'image' => 'required|image|max:2048'
+                'image' => 'required|file|max:10240|mimes:jpg,jpeg,png,webp,avif',
+            ], [
+                'image.required' => 'Pilih gambar dulu sebelum upload.',
+                'image.max'      => 'Ukuran gambar maksimal 10MB. Kompres dulu kalau lebih.',
+                'image.mimes'    => 'Format harus JPG, JPEG, PNG, WebP, atau AVIF.',
+                'image.file'     => 'Upload gagal. Coba file lain.',
             ]);
 
-            $heroImages = \App\Models\SiteContent::getJson('hero_slides', []);
-
             $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            if (!$file || !$file->isValid()) {
+                return back()->with('error', 'Upload gagal: ' . ($file ? $file->getErrorMessage() : 'File tidak ditemukan.'));
+            }
+
+            $heroImages = \App\Models\SiteContent::getJson('hero_slides', []);
+            if (!is_array($heroImages)) $heroImages = [];
+
+            if (count($heroImages) >= 10) {
+                return back()->with('error', 'Maksimal 10 gambar slideshow. Hapus dulu yang lama.');
+            }
+
+            if (!is_dir(public_path('images'))) {
+                mkdir(public_path('images'), 0755, true);
+            }
+
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+            $filename = time() . '_hero_' . uniqid() . '.' . $ext;
+
             $file->move(public_path('images'), $filename);
             $heroImages[] = 'images/' . $filename;
 
@@ -339,8 +371,15 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             return back()->with('success', 'Gambar berhasil ditambahkan!');
         })->name('hero.add');
 
+        // ========== HAPUS GAMBAR SLIDESHOW ==========
         Route::post('/hero/remove', function (\Illuminate\Http\Request $request) {
+            $request->validate([
+                'index' => 'required|integer|min:0',
+            ]);
+
             $heroImages = \App\Models\SiteContent::getJson('hero_slides', []);
+            if (!is_array($heroImages)) $heroImages = [];
+
             $index = (int) $request->index;
 
             if (isset($heroImages[$index])) {
@@ -351,11 +390,14 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
                 unset($heroImages[$index]);
                 $heroImages = array_values($heroImages);
                 \App\Models\SiteContent::set('hero_slides', json_encode($heroImages), 'json');
+
+                return back()->with('success', 'Gambar berhasil dihapus!');
             }
 
-            return back()->with('success', 'Gambar berhasil dihapus!');
+            return back()->with('error', 'Gambar tidak ditemukan.');
         })->name('hero.remove');
 
+        // ---------- BUSINESS TEXT ----------
         Route::post('/business-text', function (\Illuminate\Http\Request $request) {
             \App\Models\SiteContent::set('business_label', $request->business_label);
             \App\Models\SiteContent::set('business_title', $request->business_title);
@@ -367,6 +409,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             return back()->with('success', 'Text Daftar Usaha berhasil diupdate!');
         })->name('business.text');
 
+        // ---------- TESTIMONIAL TEXT ----------
         Route::post('/testimonial-text', function (\Illuminate\Http\Request $request) {
             \App\Models\SiteContent::set('testimonial_label', $request->testimonial_label);
             \App\Models\SiteContent::set('testimonial_title', $request->testimonial_title);
@@ -376,6 +419,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             return back()->with('success', 'Text Testimoni berhasil diupdate!');
         })->name('testimonial.text');
 
+        // ---------- ABOUT ----------
         Route::get('/about', function () {
             return view('admin.about.index');
         })->name('about');
@@ -387,9 +431,10 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             \App\Models\SiteContent::set('about_desc_1', $request->about_desc_1);
             \App\Models\SiteContent::set('about_desc_2', $request->about_desc_2);
 
-            if ($request->hasFile('about_image')) {
+            if ($request->hasFile('about_image') && $request->file('about_image')->isValid()) {
                 $file = $request->file('about_image');
-                $filename = time() . '_' . $file->getClientOriginalName();
+                $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+                $filename = time() . '_' . uniqid() . '.' . $ext;
                 $file->move(public_path('images'), $filename);
                 \App\Models\SiteContent::set('about_image', 'images/' . $filename, 'image');
             }
@@ -397,6 +442,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             return back()->with('success', 'Tentang Kami berhasil diupdate!');
         })->name('about.store');
 
+        // ---------- STATS ----------
         Route::get('/stats', function () {
             return view('admin.stats.index');
         })->name('stats');
@@ -411,6 +457,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
             return back()->with('success', 'Statistik berhasil diupdate!');
         })->name('stats.store');
 
+        // ---------- CONTACT & FOOTER ----------
         Route::get('/contact', function () {
             return view('admin.contact.index');
         })->name('contact');
@@ -480,9 +527,9 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             'google_maps_link' => 'nullable|string|max:1000',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
-            'image' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
         ]);
 
         $data = $request->except(['image', 'images', 'remove_images', '_token', '_method']);
@@ -543,9 +590,9 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             'google_maps_link' => 'nullable|string|max:1000',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
-            'image' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
         ]);
 
         $data = $request->except(['image', 'images', 'remove_images', '_token', '_method']);
@@ -627,7 +674,7 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             ->with('success', 'Usaha berhasil dihapus!');
     })->name('businesses.destroy');
 
-        // ⭐ HAPUS GALERI PER GAMBAR (USER)
+    // ⭐ HAPUS GALERI PER GAMBAR (USER)
     Route::delete('/businesses/{id}/remove-image', function (\Illuminate\Http\Request $request, $id) {
         $business = \App\Models\Business::where('user_id', auth()->id())
             ->findOrFail($id);
@@ -637,7 +684,6 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             return back()->with('error', 'Gambar tidak valid.');
         }
 
-        // Hapus file
         $paths = [
             public_path($imgPath),
             public_path('images/' . basename($imgPath)),
@@ -649,7 +695,6 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             }
         }
 
-        // Hapus dari array
         $current = $business->images;
         if (!is_array($current)) $current = [];
         $current = array_values(array_filter($current, function($i) use ($imgPath) {

@@ -119,31 +119,27 @@
 
                     {{-- ⭐ GALERI — ANTI ERROR --}}
                     @php
-                        // Ambil data mentah
-                        $rawImages = $business->images;
+                    $rawImages = $business->images;
 
-                        // Kalau string, decode
-                        if (is_string($rawImages)) {
-                            $decoded = json_decode($rawImages, true);
-                            $rawImages = is_array($decoded) ? $decoded : [];
-                        }
+                    if (is_string($rawImages)) {
+                    $decoded = json_decode($rawImages, true);
+                    $rawImages = is_array($decoded) ? $decoded : [];
+                    }
 
-                        // Kalau bukan array, jadi []
-                        if (!is_array($rawImages)) {
-                            $rawImages = [];
-                        }
+                    if (!is_array($rawImages)) {
+                    $rawImages = [];
+                    }
 
-                        // Flatten + filter cuma string
-                        $galeriImages = [];
-                        $queue = $rawImages;
-                        while (!empty($queue)) {
-                            $item = array_shift($queue);
-                            if (is_array($item)) {
-                                $queue = array_merge($queue, $item);
-                            } elseif (is_string($item) && trim($item) !== '' && file_exists(public_path($item))) {
-                                $galeriImages[] = $item;
-                            }
-                        }
+                    $galeriImages = [];
+                    $queue = $rawImages;
+                    while (!empty($queue)) {
+                    $item = array_shift($queue);
+                    if (is_array($item)) {
+                    $queue = array_merge($queue, $item);
+                    } elseif (is_string($item) && trim($item) !== '' && file_exists(public_path($item))) {
+                    $galeriImages[] = $item;
+                    }
+                    }
                     @endphp
 
                     @if (count($galeriImages) > 0)
@@ -154,18 +150,113 @@
                         </p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                             @foreach ($galeriImages as $index => $img)
-                                @if (is_string($img))
-                                <div class="relative group cursor-pointer overflow-hidden rounded-lg border border-gray-200"
-                                    onclick="openLightbox('{{ asset($img) }}', {{ $index }})">
-                                    <img src="{{ asset($img) }}" alt="Foto {{ $index + 1 }}"
-                                        class="w-full h-32 md:h-40 object-cover transition-transform duration-300 group-hover:scale-110">
-                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                                        <i class="fas fa-search-plus text-white text-2xl opacity-0 group-hover:opacity-100 transition"></i>
-                                    </div>
+                            @if (is_string($img))
+                            <div class="relative group cursor-pointer overflow-hidden rounded-lg border border-gray-200"
+                                onclick="openLightbox('{{ asset($img) }}', {{ $index }})">
+                                <img src="{{ asset($img) }}" alt="Foto {{ $index + 1 }}"
+                                    class="w-full h-32 md:h-40 object-cover transition-transform duration-300 group-hover:scale-110">
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                                    <i class="fas fa-search-plus text-white text-2xl opacity-0 group-hover:opacity-100 transition"></i>
                                 </div>
-                                @endif
+                            </div>
+                            @endif
                             @endforeach
                         </div>
+                    </div>
+                    @endif
+
+                    {{-- ⭐ VIDEO YOUTUBE --}}
+                    @php
+                    $youtubeUrl = $business->youtube_url ?? null;
+
+                    if (!$youtubeUrl && isset($business->youtube_id)) {
+                    $youtubeUrl = 'https://www.youtube.com/watch?v=' . $business->youtube_id;
+                    }
+
+                    $youtubeId = null;
+                    if ($youtubeUrl) {
+                    if (preg_match('/[?&]v=([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    } elseif (preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    } elseif (preg_match('/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    } elseif (preg_match('/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    }
+                    }
+                    @endphp
+
+                    {{-- ⭐ VIDEO YOUTUBE — EMBED + FALLBACK OTOMATIS --}}
+                    @php
+                    $youtubeUrl = $business->youtube_url ?? null;
+                    $youtubeId = null;
+
+                    if ($youtubeUrl) {
+                    if (preg_match('/[?&]v=([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    } elseif (preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    } elseif (preg_match('/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    } elseif (preg_match('/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/', $youtubeUrl, $m)) {
+                    $youtubeId = $m[1];
+                    }
+                    }
+                    @endphp
+
+                    @if ($youtubeId)
+                    <div class="mt-6 rounded-xl border border-gray-200 p-4">
+                        <p class="font-semibold text-gray-700 mb-3">
+                            <i class="fab fa-youtube text-red-600 mr-2"></i> Video Profil Usaha
+                        </p>
+
+                        {{-- Kontainer Video (Embed atau Thumbnail) --}}
+                        <div id="videoContainer-{{ $youtubeId }}" class="relative overflow-hidden rounded-lg bg-black" style="padding-bottom: 56.25%; height: 0;">
+
+                            {{-- 1. Embed Iframe (default) --}}
+                            <iframe id="videoIframe-{{ $youtubeId }}"
+                                src="https://www.youtube.com/embed/{{ $youtubeId }}?rel=0&modestbranding=1&enablejsapi=1&origin={{ urlencode(url('/')) }}"
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+                                title="Video {{ $business->name }}"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+
+                            {{-- 2. Fallback Thumbnail (disembunyikan default) --}}
+                            <a id="videoFallback-{{ $youtubeId }}"
+                                href="https://www.youtube.com/watch?v={{ $youtubeId }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="hidden group absolute inset-0">
+
+                                <img
+                                    src="https://img.youtube.com/vi/{{ $youtubeId }}/maxresdefault.jpg"
+                                    alt="Thumbnail Video {{ $business->name }}"
+                                    class="absolute inset-0 w-full h-full object-cover"
+                                    onerror="this.src='https://img.youtube.com/vi/{{ $youtubeId }}/hqdefault.jpg';">
+
+                                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition"></div>
+
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="w-20 h-20 rounded-full bg-red-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition">
+                                        <i class="fas fa-play text-white text-3xl ml-1"></i>
+                                    </div>
+                                </div>
+
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                    <p class="text-white text-sm font-semibold flex items-center gap-2">
+                                        <i class="fab fa-youtube text-red-500"></i>
+                                        Tonton di YouTube
+                                    </p>
+                                </div>
+                            </a>
+                        </div>
+
+                        <p class="mt-2 text-xs text-gray-500 text-center">
+                            Video dokumentasi {{ $business->type ?? $business->name }}
+                        </p>
                     </div>
                     @endif
                 </div>
@@ -191,7 +282,7 @@
                                 Buka di Google Maps
                             </a>
                             <span class="text-gray-300">|</span>
-                            <a href="{{ $business->google_maps_link }}&destination_place_id=" target="_blank"
+                            <a href="{{ $business->google_maps_link }}" target="_blank"
                                 class="inline-flex items-center gap-2 text-sm font-semibold text-blue-500 hover:underline">
                                 <i class="fas fa-directions"></i>
                                 Petunjuk Arah
@@ -308,10 +399,37 @@
         </div>
     </div>
 
-    <!-- Script Auto-Embed Google Maps + Lightbox -->
+    @php
+    $rawForJs = $business->images;
+    if (is_string($rawForJs)) {
+    $decoded = json_decode($rawForJs, true);
+    $rawForJs = is_array($decoded) ? $decoded : [];
+    }
+    if (!is_array($rawForJs)) $rawForJs = [];
+
+    $flatForJs = [];
+    $queue = $rawForJs;
+    while (!empty($queue)) {
+    $item = array_shift($queue);
+    if (is_array($item)) {
+    $queue = array_merge($queue, $item);
+    } elseif (is_string($item) && trim($item) !== '' && file_exists(public_path($item))) {
+    $flatForJs[] = $item;
+    }
+    }
+
+    $jsImages = array_map(function($i) {
+    return asset($i);
+    }, $flatForJs);
+
+    $mapsLink = $business->google_maps_link ?? null;
+    $defaultAddress = $business->address ?? 'RT 04 Ngijo, Karangploso, Malang';
+    @endphp
+
     <script>
+        // ⭐ GOOGLE MAPS AUTO EMBED
         (function() {
-            const link = @json($business->google_maps_link ?? null);
+            const link = @json($mapsLink);
             const iframe = document.getElementById('detailMapIframe');
 
             if (!iframe || !link) return;
@@ -319,26 +437,41 @@
             let coords = null;
 
             let match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (match) coords = { lat: match[1], lng: match[2] };
+            if (match) coords = {
+                lat: match[1],
+                lng: match[2]
+            };
 
             if (!coords) {
                 match = link.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) coords = { lat: match[1], lng: match[2] };
+                if (match) coords = {
+                    lat: match[1],
+                    lng: match[2]
+                };
             }
 
             if (!coords) {
                 match = link.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) coords = { lat: match[1], lng: match[2] };
+                if (match) coords = {
+                    lat: match[1],
+                    lng: match[2]
+                };
             }
 
             if (!coords) {
                 match = link.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) coords = { lat: match[1], lng: match[2] };
+                if (match) coords = {
+                    lat: match[1],
+                    lng: match[2]
+                };
             }
 
             if (!coords) {
                 match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (match) coords = { lat: match[1], lng: match[2] };
+                if (match) coords = {
+                    lat: match[1],
+                    lng: match[2]
+                };
             }
 
             if (coords) {
@@ -349,35 +482,12 @@
                     const placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
                     iframe.src = 'https://www.google.com/maps?q=' + encodeURIComponent(placeName) + '&output=embed';
                 } else {
-                    iframe.src = 'https://www.google.com/maps?q={{ urlencode($business->address ?? 'RT 04 Ngijo, Karangploso, Malang') }}&output=embed';
+                    iframe.src = 'https://www.google.com/maps?q=' + encodeURIComponent(@json($defaultAddress)) + '&output=embed';
                 }
             }
         })();
 
-        // ⭐ GALERI LIGHTBOX — HANDLE SEMUA TIPE
-        @php
-            $rawForJs = $business->images;
-            if (is_string($rawForJs)) {
-                $decoded = json_decode($rawForJs, true);
-                $rawForJs = is_array($decoded) ? $decoded : [];
-            }
-            if (!is_array($rawForJs)) $rawForJs = [];
-
-            $flatForJs = [];
-            $queue = $rawForJs;
-            while (!empty($queue)) {
-                $item = array_shift($queue);
-                if (is_array($item)) {
-                    $queue = array_merge($queue, $item);
-                } elseif (is_string($item) && trim($item) !== '' && file_exists(public_path($item))) {
-                    $flatForJs[] = $item;
-                }
-            }
-
-            $jsImages = array_map(function($i) {
-                return asset($i);
-            }, $flatForJs);
-        @endphp
+        // ⭐ GALERI LIGHTBOX
         const galleryImages = @json($jsImages);
         let currentIndex = 0;
 
@@ -427,6 +537,61 @@
             if (e.key === 'ArrowRight') nextImage();
             if (e.key === 'ArrowLeft') prevImage();
         });
+
+        // ⭐ YOUTUBE — DETEKSI ERROR & FALLBACK OTOMATIS
+        (function() {
+            const videoId = @json($youtubeId ?? null);
+            if (!videoId) return;
+
+            const iframe = document.getElementById('videoIframe-' + videoId);
+            const fallback = document.getElementById('videoFallback-' + videoId);
+
+            if (!iframe || !fallback) return;
+
+            let videoLoaded = false;
+
+            // Timeout fallback: kalau 6 detik tidak ada respons, tampilkan fallback
+            const fallbackTimer = setTimeout(function() {
+                if (!videoLoaded) {
+                    console.warn('Video ' + videoId + ': timeout, tampilkan fallback.');
+                    iframe.style.display = 'none';
+                    fallback.classList.remove('hidden');
+                }
+            }, 6000);
+
+            // Load YouTube IFrame API
+            if (!window.YT) {
+                const tag = document.createElement('script');
+                tag.src = 'https://www.youtube.com/iframe_api';
+                document.head.appendChild(tag);
+            }
+
+            window.onYouTubeIframeAPIReady = function() {
+                try {
+                    new YT.Player('videoIframe-' + videoId, {
+                        events: {
+                            'onReady': function() {
+                                videoLoaded = true;
+                                clearTimeout(fallbackTimer);
+                                console.log('Video ' + videoId + ': OK, bisa di-embed.');
+                            },
+                            'onError': function(event) {
+                                // 2 = param salah, 5 = HTML5 error, 100 = private, 101/150 = embed diblokir
+                                console.warn('Video ' + videoId + ': error code ' + event.data + ', tampilkan fallback.');
+                                clearTimeout(fallbackTimer);
+                                iframe.style.display = 'none';
+                                fallback.classList.remove('hidden');
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Gagal init YT.Player:', e);
+                    clearTimeout(fallbackTimer);
+                    iframe.style.display = 'none';
+                    fallback.classList.remove('hidden');
+                }
+            };
+        })();
     </script>
 
 </body>

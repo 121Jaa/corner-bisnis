@@ -294,9 +294,54 @@
 
                     {{-- Author --}}
                     <div class="mt-6 pt-4 border-t border-white/10 flex items-center gap-3">
-                        <img src="{{ $testimonial->image ? asset('images/' . $testimonial->image) : asset('images/3.avif') }}"
+
+                        @php
+                        // Cek apakah punya gambar yang valid
+                        $hasImage = !empty($testimonial->image)
+                        && is_string($testimonial->image)
+                        && file_exists(public_path('images/' . $testimonial->image));
+
+                        // Ambil inisial nama (maks 2 karakter)
+                        $name = trim($testimonial->name ?? 'Anonim');
+                        $nameParts = preg_split('/\s+/', $name);
+                        $initials = '';
+                        foreach (array_slice($nameParts, 0, 2) as $part) {
+                        $initials .= strtoupper(mb_substr($part, 0, 1));
+                        }
+                        if (empty($initials)) $initials = '?';
+
+                        // Warna background dari palette (konsisten berdasarkan nama)
+                        $colors = [
+                        'from-pink-500 to-rose-600',
+                        'from-blue-500 to-indigo-600',
+                        'from-green-500 to-emerald-600',
+                        'from-yellow-500 to-orange-600',
+                        'from-purple-500 to-violet-600',
+                        'from-cyan-500 to-teal-600',
+                        'from-red-500 to-rose-600',
+                        'from-amber-500 to-orange-600',
+                        ];
+                        $colorIndex = abs(crc32($name)) % count($colors);
+                        $colorClass = $colors[$colorIndex];
+                        @endphp
+
+                        @if ($hasImage)
+                        {{-- ⭐ KALAU ADA GAMBAR: Tampilkan gambar --}}
+                        <img src="{{ asset('images/' . $testimonial->image) }}"
                             alt="{{ $testimonial->name }}"
-                            class="h-12 w-12 rounded-full object-cover border-2 border-yellow-500/50 transition-transform duration-300 group-hover:scale-110">
+                            class="h-12 w-12 rounded-full object-cover border-2 border-yellow-500/50 transition-transform duration-300 group-hover:scale-110"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        {{-- Fallback kalau gambar error --}}
+                        <div class="hidden h-12 w-12 rounded-full bg-gradient-to-br {{ $colorClass }} items-center justify-center border-2 border-yellow-500/50 text-white font-bold text-sm shadow-lg">
+                            {{ $initials }}
+                        </div>
+                        @else
+                        {{-- ⭐ KALAU NGGAK ADA GAMBAR: Tampilkan inisial --}}
+                        <div class="flex h-12 w-12 rounded-full bg-gradient-to-br {{ $colorClass }} items-center justify-center border-2 border-yellow-500/50 text-white font-bold text-sm shadow-lg transition-transform duration-300 group-hover:scale-110">
+                            {{ $initials }}
+                        </div>
+                        @endif
+
                         <div>
                             <p class="font-semibold text-white">{{ $testimonial->name }}</p>
                             <p class="text-xs text-gray-400">Warga RT 04</p>

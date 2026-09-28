@@ -158,6 +158,30 @@
                     <p class="mt-2 text-sm text-gray-600">Kelola text hero, gambar slideshow, logo navbar, daftar usaha, dan testimoni</p>
                 </div>
 
+                {{-- ========== ERROR & SUCCESS MESSAGE ========== --}}
+                @if ($errors->any())
+                    <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+                        <p class="font-bold mb-2"><i class="fas fa-exclamation-circle mr-2"></i>Ada yang salah:</p>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            @foreach ($errors->all() as $err)
+                                <li>{{ $err }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div class="mb-6 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
+                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('error') }}
+                    </div>
+                @endif
+
                 <x-flash-message />
 
                 {{-- ========== FORM TEXT HERO + LOGO ========== --}}
@@ -215,7 +239,7 @@
 
                                 <input type="file" name="navbar_logo_image" accept="image/*"
                                     class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
-                                <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ganti. Format PNG/SVG/JPG. Maks 1MB.</p>
+                                <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ganti. Format PNG/SVG/JPG. Maks 2MB.</p>
                             </div>
                         </div>
 
@@ -247,7 +271,7 @@
                     </form>
                 </div>
 
-                {{-- ⭐ ========== FORM TEXT DAFTAR USAHA ========== --}}
+                {{-- ========== FORM TEXT DAFTAR USAHA ========== --}}
                 <div class="mb-8 pb-8 border-b border-gray-200">
                     <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
                         <i class="fas fa-store mr-2"></i> Text Section "Daftar Usaha"
@@ -306,7 +330,7 @@
                     </form>
                 </div>
 
-                {{-- ⭐ ========== FORM TEXT TESTIMONI ========== --}}
+                {{-- ========== FORM TEXT TESTIMONI ========== --}}
                 <div class="mb-8 pb-8 border-b border-gray-200">
                     <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
                         <i class="fas fa-star mr-2"></i> Text Section "Testimoni"
@@ -358,7 +382,7 @@
 
                     <form action="{{ route('admin.hero.add') }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-3 p-4 bg-gradient-to-r from-[#4a1e2b] to-[#7A384D] rounded-xl">
                         @csrf
-                        <input type="file" name="image" accept="image/*" required
+                        <input type="file" name="image" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif" required
                             class="flex-1 border-2 border-white/30 bg-white/10 text-white rounded-lg p-2 focus:outline-none focus:border-white file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-[#4a1e2b] file:font-semibold file:cursor-pointer">
                         <button type="submit" class="bg-yellow-500 hover:bg-yellow-400 text-[#4a1e2b] font-bold py-2 px-6 rounded-lg transition whitespace-nowrap">
                             <i class="fas fa-plus mr-1"></i> Tambah Gambar
@@ -367,6 +391,7 @@
                     <p class="text-xs text-gray-500 mt-2">
                         <i class="fas fa-info-circle mr-1"></i>
                         Upload 1 per 1. Gambar otomatis ke-add di urutan terakhir.
+                        Format: JPG, JPEG, PNG, WebP, AVIF. <strong>Maks 5MB per gambar. Maks 10 gambar.</strong>
                     </p>
                 </div>
 
@@ -381,7 +406,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         @foreach ($heroImages as $index => $img)
                         <div class="relative group rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#4a1e2b] transition">
-                            <img src="{{ asset($img) }}" class="w-full h-40 object-cover">
+                            <img src="{{ asset($img) }}" class="w-full h-40 object-cover" alt="Hero {{ $index + 1 }}">
                             <div class="absolute top-2 left-2 bg-[#4a1e2b] text-white text-xs font-bold px-2 py-1 rounded">
                                 #{{ $index + 1 }}
                             </div>

@@ -33,9 +33,10 @@ class AdminBusinessController extends Controller
             'longitude' => 'nullable|numeric',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
-            'image' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'youtube_url' => 'nullable|string|max:255',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
         ]);
 
         $data = $request->except(['image', 'images', '_token', '_method']);
@@ -96,9 +97,10 @@ class AdminBusinessController extends Controller
             'longitude' => 'nullable|numeric',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
-            'image' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'youtube_url' => 'nullable|string|max:255',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:2048|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
         ]);
 
         $data = $request->except(['image', 'images', 'remove_images', '_token', '_method']);
@@ -128,7 +130,7 @@ class AdminBusinessController extends Controller
         }
 
         // Filter yang lama — cuma yang masih ada filenya
-        $currentImages = array_values(array_filter($currentImages, function($img) {
+        $currentImages = array_values(array_filter($currentImages, function ($img) {
             return is_string($img) && $img !== '' && file_exists(public_path($img));
         }));
 

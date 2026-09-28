@@ -17,7 +17,6 @@
             width: 100%;
             z-index: 1;
         }
-
         @media (max-width: 768px) {
             #mapPreview {
                 height: 280px;
@@ -46,7 +45,6 @@
             <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
             <div class="relative z-10 p-6 overflow-y-auto h-full">
 
-                {{-- Header --}}
                 <div class="flex items-center justify-between gap-3 pb-6">
                     <div class="flex items-center gap-3">
                         <svg class="w-10 h-10 lg:w-12 lg:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +60,6 @@
                     </button>
                 </div>
 
-                {{-- USER INFO --}}
                 <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-[#4a1e2b] font-bold text-sm shrink-0">
@@ -81,14 +78,13 @@
 
                 @php
                 $activeClass = 'bg-white/10 shadow-inner';
-
                 function navClass($patterns, $activeClass) {
-                foreach ((array) $patterns as $pattern) {
-                if (request()->routeIs($pattern) || request()->is($pattern)) {
-                return $activeClass;
-                }
-                }
-                return '';
+                    foreach ((array) $patterns as $pattern) {
+                        if (request()->routeIs($pattern) || request()->is($pattern)) {
+                            return $activeClass;
+                        }
+                    }
+                    return '';
                 }
                 @endphp
 
@@ -190,6 +186,7 @@
                     @csrf
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {{-- KOLOM KIRI --}}
                         <div>
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Kategori</label>
@@ -220,7 +217,7 @@
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Alamat</label>
-                                <input type="text" name="address" placeholder="RT 04 Ngijo, Karangploso, Malang" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <input type="text" name="address" placeholder="Alamat..." class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                             </div>
 
                             <div class="mb-4">
@@ -245,32 +242,106 @@
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Nomor HP</label>
-                                <input type="text" name="phone" placeholder="6281234567890" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <input type="text" name="phone" placeholder="Nomor WhatsApp Aktif..." class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                             </div>
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Fasilitas / Menu</label>
                                 <input type="text" name="facilities" placeholder="Fasilitas 1, Fasilitas 2" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                             </div>
+
+                            {{-- ⭐ YOUTUBE URL --}}
+                            <div class="mb-4 p-3 border-2 border-red-200 bg-red-50 rounded-lg">
+                                <label class="block text-sm font-medium mb-2">
+                                    <i class="fab fa-youtube text-red-600 mr-1"></i>
+                                    Link Video YouTube <span class="text-xs text-gray-500">(opsional)</span>
+                                </label>
+                                <input type="text" name="youtube_url" id="youtubeUrlInput"
+                                    placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Format: <code class="bg-white px-1 rounded">youtube.com/watch?v=...</code>,
+                                    <code class="bg-white px-1 rounded">youtu.be/...</code>,
+                                    <code class="bg-white px-1 rounded">youtube.com/shorts/...</code>
+                                </p>
+                                <div id="youtubePreview" class="mt-3 hidden">
+                                    <p class="text-xs font-semibold text-gray-700 mb-2">
+                                        <i class="fas fa-eye mr-1"></i> Preview:
+                                    </p>
+                                    <a id="youtubePreviewLink" href="#" target="_blank" rel="noopener noreferrer"
+                                       class="relative block overflow-hidden rounded-lg group"
+                                       style="padding-bottom: 56.25%; height: 0;">
+                                        <img id="youtubePreviewThumb" src="" alt="Thumbnail"
+                                            class="absolute inset-0 w-full h-full object-cover"
+                                            onerror="this.src='https://img.youtube.com/vi/' + this.dataset.vid + '/hqdefault.jpg';">
+                                        <div class="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-xl group-hover:scale-110 transition">
+                                                <i class="fas fa-play text-white text-2xl ml-1"></i>
+                                            </div>
+                                        </div>
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                                            <p class="text-white text-xs font-semibold flex items-center gap-2">
+                                                <i class="fab fa-youtube text-red-500"></i>
+                                                Tonton di YouTube
+                                            </p>
+                                        </div>
+                                    </a>
+                                    <p class="text-xs text-gray-500 mt-1 text-center">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Klik thumbnail untuk cek di YouTube.
+                                    </p>
+                                </div>
+
+                                {{-- ⭐ PETUNJUK --}}
+                                <div class="mt-3 bg-white border border-red-300 rounded-lg p-3">
+                                    <p class="text-xs font-bold text-red-700 mb-2 flex items-center gap-1">
+                                        <i class="fas fa-lightbulb"></i>
+                                        Agar Video Bisa Ditonton Langsung di Halaman:
+                                    </p>
+                                    <ol class="text-xs text-gray-700 space-y-1 list-decimal list-inside ml-1">
+                                        <li><strong>Rekam video usaha kamu sendiri</strong> (pakai HP saja cukup)</li>
+                                        <li><strong>Upload ke YouTube channel kamu</strong></li>
+                                        <li>Set <strong>Public</strong></li>
+                                        <li>Di setting video → <strong>Allow embedding</strong> ✅ <span class="text-gray-500">(default ON)</span></li>
+                                        <li>Copy URL → <strong>paste di form ini</strong></li>
+                                    </ol>
+                                    <div class="mt-2 pt-2 border-t border-red-200">
+                                        <p class="text-xs text-red-600 flex items-start gap-1">
+                                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                                            <span><strong>Video musik dari label besar</strong> (Vevo, Sony Music, Universal) biasanya <strong>TIDAK bisa di-embed</strong>. Pakai video dokumentasi sendiri agar bisa ditonton langsung.</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                {{-- ⭐ END PETUNJUK --}}
+                            </div>
+                            {{-- ⭐ END YOUTUBE --}}
                         </div>
 
+                        {{-- KOLOM KANAN --}}
                         <div>
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Gambar Cover (Utama)</label>
-                                <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
-                                <p class="text-xs text-gray-500 mt-1">1 gambar utama. Format: JPG, PNG. Maks 2MB</p>
+                                <input type="file" name="image"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Format: JPG, JPEG, PNG, WebP, AVIF. Maks 10MB.
+                                </p>
                             </div>
 
-                            {{-- ⭐ GALERI DETAIL --}}
                             <div class="mb-4 p-3 border-2 border-blue-200 bg-blue-50 rounded-lg">
                                 <label class="block text-sm font-medium mb-2">
                                     <i class="fas fa-images text-blue-500 mr-1"></i>
                                     Galeri Foto Detail <span class="text-xs text-gray-500">(Max 10 gambar)</span>
                                 </label>
-                                <input type="file" name="images[]" multiple accept="image/*"
+                                <input type="file" name="images[]" multiple
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
                                     class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                                 <p class="text-xs text-gray-500 mt-1">
-                                    Bisa pilih banyak sekaligus (tahan <kbd class="bg-gray-200 px-1 rounded">Ctrl</kbd>). Maks 10 gambar.
+                                    Bisa pilih banyak sekaligus (tahan <kbd class="bg-gray-200 px-1 rounded">Ctrl</kbd>).
+                                    Maks 10 gambar, maks 10MB per gambar.
                                 </p>
                             </div>
 
@@ -317,9 +388,6 @@
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
@@ -332,20 +400,14 @@
 
         // ============= DATA DROPDOWN =============
         const businessesData = @json($businesses);
-
-        // ⭐ Group by category_id + unique by name
         const categoriesData = {};
         businessesData.forEach(function(biz) {
             if (!categoriesData[biz.category_id]) {
                 categoriesData[biz.category_id] = [];
             }
-
-            // Cek apakah name ini udah ada di kategori ini
             const isDuplicate = categoriesData[biz.category_id].some(function(item) {
                 return item.name === biz.name;
             });
-
-            // Kalau belum ada, push
             if (!isDuplicate) {
                 categoriesData[biz.category_id].push({
                     id: biz.id,
@@ -364,28 +426,23 @@
         function updateBusinesses() {
             const selectedCategoryId = categorySelect.value;
             businessSelect.innerHTML = '';
-
             if (!selectedCategoryId) {
                 businessSelect.innerHTML = '<option value="">-- Pilih Kategori Dulu --</option>';
                 businessSelect.disabled = true;
                 return;
             }
-
             if (!categoriesData[selectedCategoryId] || categoriesData[selectedCategoryId].length === 0) {
                 businessSelect.innerHTML = '<option value="">-- Belum ada usaha di kategori ini --</option>';
                 businessSelect.disabled = true;
                 return;
             }
-
             businessSelect.innerHTML = '<option value="">-- Pilih Nama Usaha --</option>';
-
             categoriesData[selectedCategoryId].forEach(function(biz) {
                 const option = document.createElement('option');
                 option.value = biz.name;
-                option.textContent = biz.name; // ⭐ cuma name
+                option.textContent = biz.name;
                 businessSelect.appendChild(option);
             });
-
             businessSelect.disabled = false;
         }
 
@@ -394,64 +451,38 @@
         const defaultLng = 112.5743297;
 
         const mapPreview = L.map('mapPreview').setView([defaultLat, defaultLng], 14);
-
         const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
             maxZoom: 19
         }).addTo(mapPreview);
-
         const markerPreview = L.marker([defaultLat, defaultLng], {
             draggable: true
         }).addTo(mapPreview);
 
         function extractCoordsFromLink(url) {
             if (!url) return null;
-
             let match = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (match) return {
-                lat: parseFloat(match[1]),
-                lng: parseFloat(match[2])
-            };
-
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
             match = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return {
-                lat: parseFloat(match[1]),
-                lng: parseFloat(match[2])
-            };
-
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
             match = url.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return {
-                lat: parseFloat(match[1]),
-                lng: parseFloat(match[2])
-            };
-
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
             match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return {
-                lat: parseFloat(match[1]),
-                lng: parseFloat(match[2])
-            };
-
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
             match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return {
-                lat: parseFloat(match[1]),
-                lng: parseFloat(match[2])
-            };
-
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
             return null;
         }
 
         function updateMap() {
             const link = mapsLinkInput.value.trim();
             openMapsLink.href = link || '#';
-
             if (!link) {
                 mapPreview.setView([defaultLat, defaultLng], 14);
                 markerPreview.setLatLng([defaultLat, defaultLng]);
                 return;
             }
-
             const coords = extractCoordsFromLink(link);
-
             if (coords) {
                 mapPreview.invalidateSize();
                 mapPreview.setView([coords.lat, coords.lng], 17);
@@ -478,6 +509,51 @@
         });
 
         categorySelect.addEventListener('change', updateBusinesses);
+
+        // ⭐ YOUTUBE PREVIEW — SELALU THUMBNAIL
+        (function() {
+            const ytInput = document.getElementById('youtubeUrlInput');
+            const ytPreview = document.getElementById('youtubePreview');
+            const ytPreviewLink = document.getElementById('youtubePreviewLink');
+            const ytThumb = document.getElementById('youtubePreviewThumb');
+
+            if (!ytInput || !ytPreview || !ytPreviewLink || !ytThumb) return;
+
+            function extractYouTubeId(url) {
+                if (!url) return null;
+                let match = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                match = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                match = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                match = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                return null;
+            }
+
+            function update() {
+                const url = ytInput.value.trim();
+                const id = extractYouTubeId(url);
+
+                if (!id) {
+                    ytPreview.classList.add('hidden');
+                    ytPreviewLink.href = '#';
+                    return;
+                }
+
+                ytPreviewLink.href = 'https://www.youtube.com/watch?v=' + id;
+                ytThumb.dataset.vid = id;
+                ytThumb.src = 'https://img.youtube.com/vi/' + id + '/maxresdefault.jpg';
+                ytPreview.classList.remove('hidden');
+            }
+
+            ytInput.addEventListener('input', update);
+            ytInput.addEventListener('change', update);
+            ytInput.addEventListener('paste', function() {
+                setTimeout(update, 50);
+            });
+        })();
     </script>
 
 </body>

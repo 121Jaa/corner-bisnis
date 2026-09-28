@@ -171,17 +171,18 @@
 
                 <x-flash-message />
 
-                <x-flash-message />
-
                 <!-- Kartu Statistik -->
                 <div class="mt-6 lg:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+                    {{-- Usaha (REALTIME dari database) --}}
                     <div class="bg-gradient-to-r from-[#4a1e2b] to-[#7A384D] rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white relative overflow-hidden">
                         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 10px 10px;"></div>
                         <div class="relative">
-                            <p class="text-2xl lg:text-4xl font-bold">10</p>
+                            <p class="text-2xl lg:text-4xl font-bold">{{ $totalBusinesses ?? $businesses->count() }}</p>
                             <p class="mt-1 lg:mt-2 text-xs lg:text-sm font-semibold uppercase tracking-wider opacity-80">Usaha</p>
                         </div>
                     </div>
+
+                    {{-- Kategori (REALTIME) --}}
                     <div class="bg-gradient-to-r from-[#D4AF37] to-[#E6C86D] rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white relative overflow-hidden">
                         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 10px 10px;"></div>
                         <div class="relative">
@@ -189,18 +190,22 @@
                             <p class="mt-1 lg:mt-2 text-xs lg:text-sm font-semibold uppercase tracking-wider opacity-80">Kategori</p>
                         </div>
                     </div>
+
+                    {{-- Akses (dari SiteContent, default 24/7) --}}
                     <div class="bg-gradient-to-r from-green-600 to-green-400 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white relative overflow-hidden">
                         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 10px 10px;"></div>
                         <div class="relative">
-                            <p class="text-2xl lg:text-4xl font-bold">24/7</p>
-                            <p class="mt-1 lg:mt-2 text-xs lg:text-sm font-semibold uppercase tracking-wider opacity-80">Akses</p>
+                            <p class="text-2xl lg:text-4xl font-bold">{{ \App\Models\SiteContent::get('stat_access', '24/7') }}</p>
+                            <p class="mt-1 lg:mt-2 text-xs lg:text-sm font-semibold uppercase tracking-wider opacity-80">{{ \App\Models\SiteContent::get('stat_access_label', 'Akses') }}</p>
                         </div>
                     </div>
+
+                    {{-- Terbantu (dari SiteContent, default 100%) --}}
                     <div class="bg-gradient-to-r from-blue-600 to-blue-400 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white relative overflow-hidden">
                         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 10px 10px;"></div>
                         <div class="relative">
-                            <p class="text-2xl lg:text-4xl font-bold">100%</p>
-                            <p class="mt-1 lg:mt-2 text-xs lg:text-sm font-semibold uppercase tracking-wider opacity-80">Terbantu</p>
+                            <p class="text-2xl lg:text-4xl font-bold">{{ \App\Models\SiteContent::get('stat_helped', '100%') }}</p>
+                            <p class="mt-1 lg:mt-2 text-xs lg:text-sm font-semibold uppercase tracking-wider opacity-80">{{ \App\Models\SiteContent::get('stat_helped_label', 'Terbantu') }}</p>
                         </div>
                     </div>
                 </div>

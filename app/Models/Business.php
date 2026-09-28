@@ -17,6 +17,7 @@ class Business extends Model
         'google_maps_link',
         'phone',
         'facilities',
+        'youtube_url',
         'image',
         'images',
         'latitude',

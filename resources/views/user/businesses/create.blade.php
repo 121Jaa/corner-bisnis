@@ -53,7 +53,6 @@
                     <p class="mt-2 text-sm text-gray-600">Pilih usaha dari daftar yang tersedia</p>
                 </div>
 
-                {{-- ⭐ INFO: Hubungi admin kalau usaha gak ada --}}
                 <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                     <div class="flex items-start gap-3">
                         <i class="fas fa-info-circle text-blue-500 mt-0.5 text-lg"></i>
@@ -82,6 +81,7 @@
                     @csrf
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {{-- KOLOM KIRI --}}
                         <div>
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Kategori</label>
@@ -112,7 +112,7 @@
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Alamat</label>
-                                <input type="text" name="address" placeholder="RT 04 Ngijo, Karangploso, Malang" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
+                                <input type="text" name="address" placeholder="Alamat..." class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
                             </div>
 
                             <div class="mb-4">
@@ -137,30 +137,98 @@
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Nomor HP</label>
-                                <input type="text" name="phone" placeholder="6281234567890" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
+                                <input type="text" name="phone" placeholder="Nomor WhatsApp Aktif..." class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
                             </div>
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Fasilitas / Menu</label>
                                 <input type="text" name="facilities" placeholder="Fasilitas 1, Fasilitas 2" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
                             </div>
+
+                            {{-- ⭐ YOUTUBE URL --}}
+                            <div class="mb-4 p-3 border-2 border-red-200 bg-red-50 rounded-lg">
+                                <label class="block text-sm font-medium mb-2">
+                                    <i class="fab fa-youtube text-red-600 mr-1"></i>
+                                    Link Video YouTube <span class="text-xs text-gray-500">(opsional)</span>
+                                </label>
+                                <input type="text" name="youtube_url" id="youtubeUrlInput"
+                                    placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Format: <code class="bg-white px-1 rounded">youtube.com/watch?v=...</code>,
+                                    <code class="bg-white px-1 rounded">youtu.be/...</code>,
+                                    <code class="bg-white px-1 rounded">youtube.com/shorts/...</code>
+                                </p>
+                                <div id="youtubePreview" class="mt-3 hidden">
+                                    <p class="text-xs font-semibold text-gray-700 mb-2">
+                                        <i class="fas fa-eye mr-1"></i> Preview:
+                                    </p>
+                                    <a id="youtubePreviewLink" href="#" target="_blank" rel="noopener noreferrer"
+                                       class="relative block overflow-hidden rounded-lg group"
+                                       style="padding-bottom: 56.25%; height: 0;">
+                                        <img id="youtubePreviewThumb" src="" alt="Thumbnail"
+                                            class="absolute inset-0 w-full h-full object-cover"
+                                            onerror="this.src='https://img.youtube.com/vi/' + this.dataset.vid + '/hqdefault.jpg';">
+                                        <div class="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-xl group-hover:scale-110 transition">
+                                                <i class="fas fa-play text-white text-2xl ml-1"></i>
+                                            </div>
+                                        </div>
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                                            <p class="text-white text-xs font-semibold flex items-center gap-2">
+                                                <i class="fab fa-youtube text-red-500"></i>
+                                                Tonton di YouTube
+                                            </p>
+                                        </div>
+                                    </a>
+                                    <p class="text-xs text-gray-500 mt-1 text-center">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Klik thumbnail untuk cek di YouTube.
+                                    </p>
+                                </div>
+
+                                {{-- ⭐ PETUNJUK --}}
+                                <div class="mt-3 bg-white border border-red-300 rounded-lg p-3">
+                                    <p class="text-xs font-bold text-red-700 mb-2 flex items-center gap-1">
+                                        <i class="fas fa-lightbulb"></i>
+                                        Agar Video Bisa Ditonton Langsung di Halaman:
+                                    </p>
+                                    <ol class="text-xs text-gray-700 space-y-1 list-decimal list-inside ml-1">
+                                        <li><strong>Rekam video usaha kamu sendiri</strong> (pakai HP saja cukup)</li>
+                                        <li><strong>Upload ke YouTube channel kamu</strong></li>
+                                        <li>Set <strong>Public</strong></li>
+                                        <li>Di setting video → <strong>Allow embedding</strong> ✅ <span class="text-gray-500">(default ON)</span></li>
+                                        <li>Copy URL → <strong>paste di form ini</strong></li>
+                                    </ol>
+                                    <div class="mt-2 pt-2 border-t border-red-200">
+                                        <p class="text-xs text-red-600 flex items-start gap-1">
+                                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                                            <span><strong>Video musik dari label besar</strong> (Vevo, Sony Music, Universal) biasanya <strong>TIDAK bisa di-embed</strong>. Pakai video dokumentasi sendiri agar bisa ditonton langsung.</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                {{-- ⭐ END PETUNJUK --}}
+                            </div>
+                            {{-- ⭐ END YOUTUBE --}}
                         </div>
 
+                        {{-- KOLOM KANAN --}}
                         <div>
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Gambar Cover (Utama)</label>
-                                <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
                                 <p class="text-xs text-gray-500 mt-1">1 gambar utama. Format: JPG, PNG. Maks 2MB</p>
                             </div>
 
-                            {{-- ⭐ GALERI DETAIL --}}
                             <div class="mb-4 p-3 border-2 border-blue-200 bg-blue-50 rounded-lg">
                                 <label class="block text-sm font-medium mb-2">
                                     <i class="fas fa-images text-blue-500 mr-1"></i>
                                     Galeri Foto Detail <span class="text-xs text-gray-500">(Max 10 gambar)</span>
                                 </label>
                                 <input type="file" name="images[]" multiple accept="image/*"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
                                 <p class="text-xs text-gray-500 mt-1">
                                     Bisa pilih banyak sekaligus (tahan <kbd class="bg-gray-200 px-1 rounded">Ctrl</kbd>). Maks 10 gambar.
                                 </p>
@@ -350,6 +418,51 @@
         });
 
         categorySelect.addEventListener('change', updateBusinesses);
+
+        // ⭐ YOUTUBE PREVIEW
+        (function() {
+            const ytInput = document.getElementById('youtubeUrlInput');
+            const ytPreview = document.getElementById('youtubePreview');
+            const ytPreviewLink = document.getElementById('youtubePreviewLink');
+            const ytThumb = document.getElementById('youtubePreviewThumb');
+
+            if (!ytInput || !ytPreview || !ytPreviewLink || !ytThumb) return;
+
+            function extractYouTubeId(url) {
+                if (!url) return null;
+                let match = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                match = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                match = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                match = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+                if (match) return match[1];
+                return null;
+            }
+
+            function update() {
+                const url = ytInput.value.trim();
+                const id = extractYouTubeId(url);
+
+                if (!id) {
+                    ytPreview.classList.add('hidden');
+                    ytPreviewLink.href = '#';
+                    return;
+                }
+
+                ytPreviewLink.href = 'https://www.youtube.com/watch?v=' + id;
+                ytThumb.dataset.vid = id;
+                ytThumb.src = 'https://img.youtube.com/vi/' + id + '/maxresdefault.jpg';
+                ytPreview.classList.remove('hidden');
+            }
+
+            ytInput.addEventListener('input', update);
+            ytInput.addEventListener('change', update);
+            ytInput.addEventListener('paste', function() {
+                setTimeout(update, 50);
+            });
+        })();
     </script>
 
 </body>
