@@ -30,7 +30,6 @@
             <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
             <div class="relative z-10 p-6 overflow-y-auto h-full">
 
-                {{-- Header --}}
                 <div class="flex items-center justify-between gap-3 pb-6">
                     <div class="flex items-center gap-3">
                         <svg class="w-10 h-10 lg:w-12 lg:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,7 +45,6 @@
                     </button>
                 </div>
 
-                {{-- ⭐ USER INFO --}}
                 <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-[#4a1e2b] font-bold text-sm shrink-0">
@@ -63,11 +61,11 @@
                     </div>
                 </div>
 
-                {{-- ⭐ HELPER FUNCTION UNTUK ACTIVE STATE --}}
                 @php
                 $activeClass = 'bg-white/10 shadow-inner';
                 $normalClass = '';
 
+                if (!function_exists('navClass')) {
                 function navClass($patterns, $activeClass) {
                 foreach ((array) $patterns as $pattern) {
                 if (request()->routeIs($pattern) || request()->is($pattern)) {
@@ -75,6 +73,7 @@
                 }
                 }
                 return '';
+                }
                 }
                 @endphp
 
@@ -108,7 +107,6 @@
                                 <i class="fas fa-star w-5 h-5"></i>
                                 <span class="text-sm font-semibold">Testimoni</span>
                             </a>
-                            {{-- ⭐ MENU USER BARU --}}
                             <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('admin/users*') ? 'bg-white/10 shadow-inner' : '' }}">
                                 <i class="fas fa-users w-5 h-5"></i>
                                 <span class="text-sm font-semibold">Kelola User</span>
@@ -159,7 +157,7 @@
                 <div class="mb-6">
                     <p class="text-xs lg:text-sm uppercase tracking-[0.3em] text-gray-400">Konten Web</p>
                     <h2 class="font-serif text-2xl lg:text-4xl font-bold text-[#4a1e2b]">Statistik</h2>
-                    <p class="mt-2 text-sm text-gray-600">Kelola angka dan label statistik di halaman utama</p>
+                    <p class="mt-2 text-sm text-gray-600">Kelola angka, label, font size, dan warna statistik di halaman utama</p>
                 </div>
 
                 <x-flash-message />
@@ -169,55 +167,207 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                        {{-- Akses Online --}}
-                        <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
-                            <h3 class="font-bold mb-3 text-[#4a1e2b]">Akses Online</h3>
+                        {{-- ============ AKSES ONLINE ============ --}}
+                        <div class="border-2 border-gray-200 rounded-xl p-4 bg-gray-50">
+                            <h3 class="font-bold mb-3 text-[#4a1e2b]">
+                                <i class="fas fa-clock mr-1"></i> Akses Online
+                            </h3>
+
                             <div class="mb-3">
                                 <label class="block text-sm font-medium mb-1">Nilai</label>
                                 <input type="text" name="stat_access" value="{{ \App\Models\SiteContent::get('stat_access', '24/7') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
                             </div>
-                            <div>
+
+                            <div class="mb-3">
                                 <label class="block text-sm font-medium mb-1">Label</label>
                                 <input type="text" name="stat_access_label" value="{{ \App\Models\SiteContent::get('stat_access_label', 'Akses Online') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-300">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Nilai Size: <span id="a-val-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_access_size', 36) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_access_size" min="20" max="100"
+                                        value="{{ \App\Models\SiteContent::get('stat_access_size', 36) }}"
+                                        oninput="document.getElementById('a-val-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Nilai Warna</label>
+                                    <input type="color" name="stat_access_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_access_color', '#4a1e2b') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Label Size: <span id="a-lbl-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_access_label_size', 14) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_access_label_size" min="8" max="40"
+                                        value="{{ \App\Models\SiteContent::get('stat_access_label_size', 14) }}"
+                                        oninput="document.getElementById('a-lbl-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Label Warna</label>
+                                    <input type="color" name="stat_access_label_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_access_label_color', '#6b7280') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Warga Terbantu --}}
-                        <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
-                            <h3 class="font-bold mb-3 text-[#4a1e2b]">Warga Terbantu</h3>
+                        {{-- ============ WARGA TERBANTU ============ --}}
+                        <div class="border-2 border-gray-200 rounded-xl p-4 bg-gray-50">
+                            <h3 class="font-bold mb-3 text-[#4a1e2b]">
+                                <i class="fas fa-hands-helping mr-1"></i> Warga Terbantu
+                            </h3>
+
                             <div class="mb-3">
                                 <label class="block text-sm font-medium mb-1">Nilai</label>
                                 <input type="text" name="stat_helped" value="{{ \App\Models\SiteContent::get('stat_helped', '100%') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
                             </div>
-                            <div>
+
+                            <div class="mb-3">
                                 <label class="block text-sm font-medium mb-1">Label</label>
                                 <input type="text" name="stat_helped_label" value="{{ \App\Models\SiteContent::get('stat_helped_label', 'Warga Terbantu') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-300">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Nilai Size: <span id="h-val-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_helped_size', 36) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_helped_size" min="20" max="100"
+                                        value="{{ \App\Models\SiteContent::get('stat_helped_size', 36) }}"
+                                        oninput="document.getElementById('h-val-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Nilai Warna</label>
+                                    <input type="color" name="stat_helped_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_helped_color', '#4a1e2b') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Label Size: <span id="h-lbl-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_helped_label_size', 14) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_helped_label_size" min="8" max="40"
+                                        value="{{ \App\Models\SiteContent::get('stat_helped_label_size', 14) }}"
+                                        oninput="document.getElementById('h-lbl-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Label Warna</label>
+                                    <input type="color" name="stat_helped_label_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_helped_label_color', '#6b7280') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Usaha Terdaftar --}}
-                        <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
-                            <h3 class="font-bold mb-3 text-[#4a1e2b]">Usaha Terdaftar (Label Saja)</h3>
-                            <p class="text-xs text-gray-500 mb-3">Nilai otomatis dari jumlah usaha di database</p>
-                            <div>
+                        {{-- ============ USAHA TERDAFTAR ============ --}}
+                        <div class="border-2 border-gray-200 rounded-xl p-4 bg-gray-50">
+                            <h3 class="font-bold mb-3 text-[#4a1e2b]">
+                                <i class="fas fa-store mr-1"></i> Usaha Terdaftar
+                            </h3>
+                            <p class="text-xs text-gray-500 mb-3">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Nilai otomatis dari jumlah usaha di database
+                            </p>
+
+                            <div class="mb-3">
                                 <label class="block text-sm font-medium mb-1">Label</label>
                                 <input type="text" name="stat_business_label" value="{{ \App\Models\SiteContent::get('stat_business_label', 'Usaha Terdaftar') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-300">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Nilai Size: <span id="b-val-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_business_size', 36) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_business_size" min="20" max="100"
+                                        value="{{ \App\Models\SiteContent::get('stat_business_size', 36) }}"
+                                        oninput="document.getElementById('b-val-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Nilai Warna</label>
+                                    <input type="color" name="stat_business_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_business_color', '#4a1e2b') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Label Size: <span id="b-lbl-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_business_label_size', 14) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_business_label_size" min="8" max="40"
+                                        value="{{ \App\Models\SiteContent::get('stat_business_label_size', 14) }}"
+                                        oninput="document.getElementById('b-lbl-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Label Warna</label>
+                                    <input type="color" name="stat_business_label_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_business_label_color', '#6b7280') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Kategori Usaha --}}
-                        <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
-                            <h3 class="font-bold mb-3 text-[#4a1e2b]">Kategori Usaha (Label Saja)</h3>
-                            <p class="text-xs text-gray-500 mb-3">Nilai otomatis dari jumlah kategori di database</p>
-                            <div>
+                        {{-- ============ KATEGORI USAHA ============ --}}
+                        <div class="border-2 border-gray-200 rounded-xl p-4 bg-gray-50">
+                            <h3 class="font-bold mb-3 text-[#4a1e2b]">
+                                <i class="fas fa-folder mr-1"></i> Kategori Usaha
+                            </h3>
+                            <p class="text-xs text-gray-500 mb-3">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Nilai otomatis dari jumlah kategori di database
+                            </p>
+
+                            <div class="mb-3">
                                 <label class="block text-sm font-medium mb-1">Label</label>
                                 <input type="text" name="stat_category_label" value="{{ \App\Models\SiteContent::get('stat_category_label', 'Kategori Usaha') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-300">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Nilai Size: <span id="c-val-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_category_size', 36) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_category_size" min="20" max="100"
+                                        value="{{ \App\Models\SiteContent::get('stat_category_size', 36) }}"
+                                        oninput="document.getElementById('c-val-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Nilai Warna</label>
+                                    <input type="color" name="stat_category_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_category_color', '#4a1e2b') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">
+                                        Label Size: <span id="c-lbl-size" class="font-bold">{{ \App\Models\SiteContent::get('stat_category_label_size', 14) }}px</span>
+                                    </label>
+                                    <input type="range" name="stat_category_label_size" min="8" max="40"
+                                        value="{{ \App\Models\SiteContent::get('stat_category_label_size', 14) }}"
+                                        oninput="document.getElementById('c-lbl-size').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Label Warna</label>
+                                    <input type="color" name="stat_category_label_color"
+                                        value="{{ \App\Models\SiteContent::get('stat_category_label_color', '#6b7280') }}"
+                                        class="w-full h-9 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                </div>
                             </div>
                         </div>
 
@@ -225,7 +375,7 @@
 
                     <div class="flex justify-end mt-6 border-t pt-6">
                         <button type="submit" class="bg-[#4a1e2b] hover:bg-[#6b2d3f] text-white font-bold py-2 px-6 rounded-lg transition">
-                            <i class="fas fa-save mr-2"></i> Simpan
+                            <i class="fas fa-save mr-2"></i> Simpan Semua
                         </button>
                     </div>
                 </form>

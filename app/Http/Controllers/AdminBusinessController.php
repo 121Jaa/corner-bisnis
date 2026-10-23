@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Helpers\ImageHelper;
 
 class AdminBusinessController extends Controller
 {
@@ -34,9 +35,9 @@ class AdminBusinessController extends Controller
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
             'youtube_url' => 'nullable|string|max:255',
-            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
         ]);
 
         $data = $request->except(['image', 'images', '_token', '_method']);
@@ -51,8 +52,7 @@ class AdminBusinessController extends Controller
 
         // Cover
         if ($request->hasFile('image')) {
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->file('image')->move(public_path('images'), $filename);
+            $filename = ImageHelper::uploadAndConvert($request->file('image'), 'images', 1920, 82);
             $data['image'] = $filename;
         } else {
             $data['image'] = '1.avif';
@@ -63,8 +63,7 @@ class AdminBusinessController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 if (!$file) continue;
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('images'), $filename);
+                $filename = ImageHelper::uploadAndConvert($file, 'images', 1600, 85);
                 $images[] = 'images/' . $filename;
             }
         }
@@ -98,9 +97,9 @@ class AdminBusinessController extends Controller
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
             'youtube_url' => 'nullable|string|max:255',
-            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
         ]);
 
         $data = $request->except(['image', 'images', 'remove_images', '_token', '_method']);
@@ -113,17 +112,16 @@ class AdminBusinessController extends Controller
             $data['type'] = $data['name'];
         }
 
-        // Cover
+        // ⭐ Cover (udah bener)
         if ($request->hasFile('image')) {
             if ($business->image && $business->image != '1.avif' && file_exists(public_path('images/' . $business->image))) {
                 @unlink(public_path('images/' . $business->image));
             }
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->file('image')->move(public_path('images'), $filename);
+            $filename = ImageHelper::uploadAndConvert($request->file('image'), 'images', 1920, 82);
             $data['image'] = $filename;
         }
 
-        // Galeri — ambil yang lama (pastikan array)
+        // Galeri — ambil yang lama
         $currentImages = $business->images;
         if (!is_array($currentImages)) {
             $currentImages = [];
@@ -145,12 +143,11 @@ class AdminBusinessController extends Controller
             }
         }
 
-        // Tambah baru
+        // ⭐ Tambah gambar baru (udah bener pake Helper)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 if (!$file) continue;
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('images'), $filename);
+                $filename = ImageHelper::uploadAndConvert($file, 'images', 1600, 85);
                 $currentImages[] = 'images/' . $filename;
             }
         }

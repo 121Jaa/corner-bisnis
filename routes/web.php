@@ -6,8 +6,11 @@ use App\Http\Controllers\KulinerController;
 use App\Http\Controllers\LaundryController;
 use App\Http\Controllers\JasaController;
 use App\Http\Controllers\TokoController;
+use App\Http\Controllers\KerajinanController;
 use App\Http\Controllers\AdminBusinessController;
 use Illuminate\Support\Facades\Route;
+use App\Helpers\ImageHelper;
+
 
 // ==================== PUBLIC ROUTES ====================
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -40,6 +43,12 @@ Route::get('/toko/buah', [TokoController::class, 'buah'])->name('toko.buah');
 Route::get('/toko/komputer', [TokoController::class, 'komputer'])->name('toko.komputer');
 Route::get('/toko/kelontong', [TokoController::class, 'kelontong'])->name('toko.kelontong');
 Route::get('/toko/{id}', [TokoController::class, 'show'])->name('toko.show');
+
+Route::get('/kerajinan', [KerajinanController::class, 'index'])->name('kerajinan');
+Route::get('/kerajinan/anyaman', [KerajinanController::class, 'anyaman'])->name('kerajinan.anyaman');
+Route::get('/kerajinan/batik', [KerajinanController::class, 'batik'])->name('kerajinan.batik');
+Route::get('/kerajinan/ukiran', [KerajinanController::class, 'ukiran'])->name('kerajinan.ukiran');
+Route::get('/kerajinan/{id}', [KerajinanController::class, 'show'])->name('kerajinan.show');
 
 // ==================== ADMIN ROUTES (PROTECTED) ====================
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
@@ -106,8 +115,8 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         unset($data['image']);
 
         if ($request->hasFile('image')) {
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->file('image')->move(public_path('images'), $filename);
+            // ⭐ Auto convert & compress
+            $filename = ImageHelper::uploadAndConvert($request->file('image'), 'images', 800, 85);
             $data['image'] = $filename;
         }
 
@@ -134,8 +143,8 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         unset($data['image']);
 
         if ($request->hasFile('image')) {
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->file('image')->move(public_path('images'), $filename);
+            // ⭐ Auto convert & compress
+            $filename = ImageHelper::uploadAndConvert($request->file('image'), 'images', 800, 85);
             $data['image'] = $filename;
         }
 
@@ -275,7 +284,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
         $current = $business->images;
         if (!is_array($current)) $current = [];
-        $current = array_values(array_filter($current, function($i) use ($imgPath) {
+        $current = array_values(array_filter($current, function ($i) use ($imgPath) {
             return trim((string) $i) !== $imgPath;
         }));
 
@@ -297,41 +306,112 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
         // ========== SIMPAN TEXT HERO + LOGO NAVBAR ==========
         Route::post('/hero/text', function (\Illuminate\Http\Request $request) {
-            $request->validate([
-                'hero_badge'         => 'nullable|string|max:255',
-                'hero_title'         => 'nullable|string|max:500',
-                'hero_subtitle'      => 'nullable|string|max:1000',
-                'navbar_logo_type'   => 'nullable|in:text,image',
-                'navbar_logo_text'   => 'nullable|string|max:100',
-                'navbar_logo_image'  => 'nullable|file|max:10240|mimes:jpg,jpeg,png,svg,webp,avif',
-            ], [
-                'navbar_logo_image.max'   => 'Logo maksimal 10MB.',
-                'navbar_logo_image.mimes' => 'Format logo harus JPG, JPEG, PNG, SVG, WebP, atau AVIF.',
-            ]);
+            // Helper: simpan value
+            $set = function ($key, $value = null) {
+                if ($value !== null) \App\Models\SiteContent::set($key, $value);
+            };
 
-            \App\Models\SiteContent::set('hero_badge', $request->hero_badge ?? '');
-            \App\Models\SiteContent::set('hero_title', $request->hero_title ?? '');
-            \App\Models\SiteContent::set('hero_subtitle', $request->hero_subtitle ?? '');
+            // ============ HERO ============
+            $set('hero_badge', $request->hero_badge ?? '');
+            $set('hero_title', $request->hero_title ?? '');
+            $set('hero_subtitle', $request->hero_subtitle ?? '');
+            $set('hero_badge_size', $request->hero_badge_size ?? 14);
+            $set('hero_badge_color', $request->hero_badge_color ?? '#fbbf24');
+            $set('hero_title_size', $request->hero_title_size ?? 60);
+            $set('hero_title_color', $request->hero_title_color ?? '#ffffff');
+            $set('hero_subtitle_size', $request->hero_subtitle_size ?? 18);
+            $set('hero_subtitle_color', $request->hero_subtitle_color ?? '#e5e7eb');
 
-            \App\Models\SiteContent::set('navbar_logo_type', $request->navbar_logo_type ?? 'text');
-            \App\Models\SiteContent::set('navbar_logo_text', $request->navbar_logo_text ?? 'RT 04');
+            // ============ TENTANG ============
+            $set('about_label', $request->about_label ?? '');
+            $set('about_title', $request->about_title ?? '');
+            $set('about_subtitle', $request->about_subtitle ?? '');
+            $set('about_desc_1', $request->about_desc_1 ?? '');
+            $set('about_desc_2', $request->about_desc_2 ?? '');
+
+            $set('about_label_size', $request->about_label_size ?? 14);
+            $set('about_label_color', $request->about_label_color ?? '#eab308');
+            $set('about_title_size', $request->about_title_size ?? 48);
+            $set('about_title_color', $request->about_title_color ?? '#ffffff');
+            $set('about_subtitle_size', $request->about_subtitle_size ?? 20);
+            $set('about_subtitle_color', $request->about_subtitle_color ?? '#fef08a');
+            $set('about_desc_size', $request->about_desc_size ?? 18);
+            $set('about_desc_color', $request->about_desc_color ?? '#d1d5db');
+
+            // ============ DAFTAR USAHA ============
+            $set('business_label', $request->business_label ?? '');
+            $set('business_title', $request->business_title ?? '');
+            $set('business_subtitle', $request->business_subtitle ?? '');
+            $set('business_view_detail', $request->business_view_detail ?? '');
+            $set('business_view_all_button', $request->business_view_all_button ?? '');
+            $set('business_empty', $request->business_empty ?? '');
+            $set('business_view_detail_size', $request->business_view_detail_size ?? 14);
+            $set('business_view_detail_color', $request->business_view_detail_color ?? '#111827');
+            $set('business_view_all_button_size', $request->business_view_all_button_size ?? 16);
+            $set('business_view_all_button_color', $request->business_view_all_button_color ?? '#ffffff');
+
+            $set('business_label_size', $request->business_label_size ?? 14);
+            $set('business_label_color', $request->business_label_color ?? '#6b7280');
+            $set('business_title_size', $request->business_title_size ?? 40);
+            $set('business_title_color', $request->business_title_color ?? '#111827');
+            $set('business_subtitle_size', $request->business_subtitle_size ?? 18);
+            $set('business_subtitle_color', $request->business_subtitle_color ?? '#4b5563');
+
+            // ============ TESTIMONI ============
+            $set('testimonial_label', $request->testimonial_label ?? '');
+            $set('testimonial_title', $request->testimonial_title ?? '');
+            $set('testimonial_subtitle', $request->testimonial_subtitle ?? '');
+            $set('testimonial_empty', $request->testimonial_empty ?? '');
+
+            $set('testimonial_label_size', $request->testimonial_label_size ?? 14);
+            $set('testimonial_label_color', $request->testimonial_label_color ?? '#eab308');
+            $set('testimonial_title_size', $request->testimonial_title_size ?? 36);
+            $set('testimonial_title_color', $request->testimonial_title_color ?? '#ffffff');
+            $set('testimonial_subtitle_size', $request->testimonial_subtitle_size ?? 18);
+            $set('testimonial_subtitle_color', $request->testimonial_subtitle_color ?? '#d1d5db');
+
+            // ============ LOGO NAVBAR ============
+            $set('navbar_logo_type', $request->navbar_logo_type ?? 'text');
+            $set('navbar_logo_text', $request->navbar_logo_text ?? 'RT 04');
 
             if ($request->hasFile('navbar_logo_image') && $request->file('navbar_logo_image')->isValid()) {
                 $oldLogo = \App\Models\SiteContent::get('navbar_logo_image');
                 if ($oldLogo && file_exists(public_path($oldLogo))) {
                     @unlink(public_path($oldLogo));
                 }
-
-                $file = $request->file('navbar_logo_image');
-                $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
-                $filename = time() . '_logo_' . uniqid() . '.' . $ext;
-
-                $file->move(public_path('images'), $filename);
+                // ⭐ keepOriginal: true → logo tetap PNG/SVG (gak jadi JPG)
+                $filename = ImageHelper::uploadAndConvert(
+                    $request->file('navbar_logo_image'),
+                    'images',
+                    500,
+                    90,
+                    true  // ← keep original
+                );
                 \App\Models\SiteContent::set('navbar_logo_image', 'images/' . $filename, 'image');
             }
 
-            return back()->with('success', 'Text hero & Logo navbar berhasil diupdate!');
+            return back()->with('success', 'Semua text & style berhasil disimpan!');
         })->name('hero.text');
+
+        // ⭐ ROUTE BARU: Simpan style section lain (Tentang, Usaha, Testimoni, CTA, Statistik, Footer)
+        Route::post('/sections/style', function (\Illuminate\Http\Request $request) {
+            $allowedSections = ['about', 'business', 'testimonial', 'cta', 'stat', 'footer'];
+
+            foreach ($allowedSections as $section) {
+                $fields = $request->input($section, []);
+                if (!is_array($fields)) continue;
+
+                foreach ($fields as $key => $value) {
+                    // Sanitize key biar aman
+                    $safeKey = preg_replace('/[^a-z0-9_]/', '', $key);
+                    if ($safeKey !== '') {
+                        \App\Models\SiteContent::set($section . '_' . $safeKey, $value);
+                    }
+                }
+            }
+
+            return back()->with('success', 'Style section berhasil disimpan!');
+        })->name('sections.style');
 
         // ========== UPLOAD GAMBAR SLIDESHOW ==========
         Route::post('/hero/add', function (\Illuminate\Http\Request $request) {
@@ -360,10 +440,8 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
                 mkdir(public_path('images'), 0755, true);
             }
 
-            $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
-            $filename = time() . '_hero_' . uniqid() . '.' . $ext;
-
-            $file->move(public_path('images'), $filename);
+            // ⭐ Auto convert ke JPG & compress
+            $filename = ImageHelper::uploadAndConvert($file, 'images', 1920, 82);
             $heroImages[] = 'images/' . $filename;
 
             \App\Models\SiteContent::set('hero_slides', json_encode($heroImages), 'json');
@@ -425,17 +503,47 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         })->name('about');
 
         Route::post('/about', function (\Illuminate\Http\Request $request) {
-            \App\Models\SiteContent::set('about_label', $request->about_label);
-            \App\Models\SiteContent::set('about_title', $request->about_title);
-            \App\Models\SiteContent::set('about_subtitle', $request->about_subtitle);
-            \App\Models\SiteContent::set('about_desc_1', $request->about_desc_1);
-            \App\Models\SiteContent::set('about_desc_2', $request->about_desc_2);
+            $request->validate([
+                'about_label'         => 'nullable|string|max:255',
+                'about_label_size'    => 'nullable|integer|min:8|max:40',
+                'about_label_color'   => 'nullable|string|max:20',
+                'about_title'         => 'nullable|string|max:255',
+                'about_title_size'    => 'nullable|integer|min:20|max:120',
+                'about_title_color'   => 'nullable|string|max:20',
+                'about_subtitle'      => 'nullable|string|max:500',
+                'about_subtitle_size' => 'nullable|integer|min:10|max:60',
+                'about_subtitle_color' => 'nullable|string|max:20',
+                'about_desc_1'        => 'nullable|string',
+                'about_desc_2'        => 'nullable|string',
+                'about_desc_size'     => 'nullable|integer|min:10|max:40',
+                'about_desc_color'    => 'nullable|string|max:20',
+                'about_image'         => 'nullable|file|max:10240|mimes:jpg,jpeg,png,webp,avif',
+            ]);
+
+            \App\Models\SiteContent::set('about_label', $request->about_label ?? '');
+            \App\Models\SiteContent::set('about_label_size', $request->about_label_size ?? 14);
+            \App\Models\SiteContent::set('about_label_color', $request->about_label_color ?? '#eab308');
+
+            \App\Models\SiteContent::set('about_title', $request->about_title ?? '');
+            \App\Models\SiteContent::set('about_title_size', $request->about_title_size ?? 48);
+            \App\Models\SiteContent::set('about_title_color', $request->about_title_color ?? '#ffffff');
+
+            \App\Models\SiteContent::set('about_subtitle', $request->about_subtitle ?? '');
+            \App\Models\SiteContent::set('about_subtitle_size', $request->about_subtitle_size ?? 20);
+            \App\Models\SiteContent::set('about_subtitle_color', $request->about_subtitle_color ?? '#fef08a');
+
+            \App\Models\SiteContent::set('about_desc_1', $request->about_desc_1 ?? '');
+            \App\Models\SiteContent::set('about_desc_2', $request->about_desc_2 ?? '');
+            \App\Models\SiteContent::set('about_desc_size', $request->about_desc_size ?? 18);
+            \App\Models\SiteContent::set('about_desc_color', $request->about_desc_color ?? '#d1d5db');
 
             if ($request->hasFile('about_image') && $request->file('about_image')->isValid()) {
-                $file = $request->file('about_image');
-                $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
-                $filename = time() . '_' . uniqid() . '.' . $ext;
-                $file->move(public_path('images'), $filename);
+                $oldImage = \App\Models\SiteContent::get('about_image');
+                if ($oldImage && file_exists(public_path($oldImage))) {
+                    @unlink(public_path($oldImage));
+                }
+                // ⭐ Auto convert ke JPG & compress
+                $filename = ImageHelper::uploadAndConvert($request->file('about_image'), 'images', 1920, 82);
                 \App\Models\SiteContent::set('about_image', 'images/' . $filename, 'image');
             }
 
@@ -448,12 +556,40 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         })->name('stats');
 
         Route::post('/stats', function (\Illuminate\Http\Request $request) {
-            \App\Models\SiteContent::set('stat_access', $request->stat_access);
-            \App\Models\SiteContent::set('stat_access_label', $request->stat_access_label);
-            \App\Models\SiteContent::set('stat_helped', $request->stat_helped);
-            \App\Models\SiteContent::set('stat_helped_label', $request->stat_helped_label);
-            \App\Models\SiteContent::set('stat_business_label', $request->stat_business_label);
-            \App\Models\SiteContent::set('stat_category_label', $request->stat_category_label);
+            $set = function ($key, $value = null) {
+                if ($value !== null) \App\Models\SiteContent::set($key, $value);
+            };
+
+            // Akses Online
+            $set('stat_access', $request->stat_access);
+            $set('stat_access_label', $request->stat_access_label);
+            $set('stat_access_size', $request->stat_access_size ?? 36);
+            $set('stat_access_color', $request->stat_access_color ?? '#4a1e2b');
+            $set('stat_access_label_size', $request->stat_access_label_size ?? 14);
+            $set('stat_access_label_color', $request->stat_access_label_color ?? '#6b7280');
+
+            // Warga Terbantu
+            $set('stat_helped', $request->stat_helped);
+            $set('stat_helped_label', $request->stat_helped_label);
+            $set('stat_helped_size', $request->stat_helped_size ?? 36);
+            $set('stat_helped_color', $request->stat_helped_color ?? '#4a1e2b');
+            $set('stat_helped_label_size', $request->stat_helped_label_size ?? 14);
+            $set('stat_helped_label_color', $request->stat_helped_label_color ?? '#6b7280');
+
+            // Usaha Terdaftar (label aja + style)
+            $set('stat_business_label', $request->stat_business_label);
+            $set('stat_business_size', $request->stat_business_size ?? 36);
+            $set('stat_business_color', $request->stat_business_color ?? '#4a1e2b');
+            $set('stat_business_label_size', $request->stat_business_label_size ?? 14);
+            $set('stat_business_label_color', $request->stat_business_label_color ?? '#6b7280');
+
+            // Kategori Usaha (label aja + style)
+            $set('stat_category_label', $request->stat_category_label);
+            $set('stat_category_size', $request->stat_category_size ?? 36);
+            $set('stat_category_color', $request->stat_category_color ?? '#4a1e2b');
+            $set('stat_category_label_size', $request->stat_category_label_size ?? 14);
+            $set('stat_category_label_color', $request->stat_category_label_color ?? '#6b7280');
+
             return back()->with('success', 'Statistik berhasil diupdate!');
         })->name('stats.store');
 
@@ -463,24 +599,40 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         })->name('contact');
 
         Route::post('/contact', function (\Illuminate\Http\Request $request) {
-            \App\Models\SiteContent::set('contact_address', $request->contact_address);
-            \App\Models\SiteContent::set('contact_phone', $request->contact_phone);
-            \App\Models\SiteContent::set('contact_email', $request->contact_email);
-            \App\Models\SiteContent::set('contact_whatsapp', $request->contact_whatsapp);
+            $set = function ($key, $value = null) {
+                if ($value !== null) \App\Models\SiteContent::set($key, $value);
+            };
 
-            \App\Models\SiteContent::set('cta_title', $request->cta_title);
-            \App\Models\SiteContent::set('cta_desc', $request->cta_desc);
-            \App\Models\SiteContent::set('cta_button', $request->cta_button);
+            // Kontak
+            $set('contact_address', $request->contact_address ?? '');
+            $set('contact_phone', $request->contact_phone ?? '');
+            $set('contact_email', $request->contact_email ?? '');
+            $set('contact_whatsapp', $request->contact_whatsapp ?? '');
 
-            \App\Models\SiteContent::set('footer_title', $request->footer_title);
-            \App\Models\SiteContent::set('footer_desc', $request->footer_desc);
-            \App\Models\SiteContent::set('footer_nav_title', $request->footer_nav_title);
-            \App\Models\SiteContent::set('footer_contact_title', $request->footer_contact_title);
-            \App\Models\SiteContent::set('footer_nav_home', $request->footer_nav_home);
-            \App\Models\SiteContent::set('footer_nav_business', $request->footer_nav_business);
-            \App\Models\SiteContent::set('footer_nav_register', $request->footer_nav_register);
-            \App\Models\SiteContent::set('footer_nav_about', $request->footer_nav_about);
-            \App\Models\SiteContent::set('footer_copyright', $request->footer_copyright);
+            // CTA
+            $set('cta_title', $request->cta_title ?? '');
+            $set('cta_title_size', $request->cta_title_size ?? 36);
+            $set('cta_title_color', $request->cta_title_color ?? '#ffffff');
+            $set('cta_desc', $request->cta_desc ?? '');
+            $set('cta_desc_size', $request->cta_desc_size ?? 18);
+            $set('cta_desc_color', $request->cta_desc_color ?? '#ffffff');
+            $set('cta_button', $request->cta_button ?? '');
+            $set('cta_button_color', $request->cta_button_color ?? '#111827');
+
+            // Footer
+            $set('footer_title', $request->footer_title ?? '');
+            $set('footer_title_size', $request->footer_title_size ?? 24);
+            $set('footer_title_color', $request->footer_title_color ?? '#ffffff');
+            $set('footer_desc', $request->footer_desc ?? '');
+            $set('footer_desc_size', $request->footer_desc_size ?? 14);
+            $set('footer_desc_color', $request->footer_desc_color ?? '#d1d5db');
+            $set('footer_nav_title', $request->footer_nav_title ?? '');
+            $set('footer_contact_title', $request->footer_contact_title ?? '');
+            $set('footer_nav_home', $request->footer_nav_home ?? '');
+            $set('footer_nav_business', $request->footer_nav_business ?? '');
+            $set('footer_nav_register', $request->footer_nav_register ?? '');
+            $set('footer_nav_about', $request->footer_nav_about ?? '');
+            $set('footer_copyright', $request->footer_copyright ?? '');
 
             return back()->with('success', 'Kontak & Footer berhasil diupdate!');
         })->name('contact.store');
@@ -527,9 +679,9 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             'google_maps_link' => 'nullable|string|max:1000',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
-            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
         ]);
 
         $data = $request->except(['image', 'images', 'remove_images', '_token', '_method']);
@@ -539,14 +691,15 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             $data['type'] = $data['name'];
         }
 
+        // ⭐ Cover (auto convert & compress)
         if ($request->hasFile('image')) {
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->file('image')->move(public_path('images'), $filename);
+            $filename = ImageHelper::uploadAndConvert($request->file('image'), 'images', 1920, 82);
             $data['image'] = $filename;
         } else {
             $data['image'] = '1.avif';
         }
 
+        // ⭐ Galeri (auto convert & compress)
         $images = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
@@ -554,8 +707,7 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
                 if (!$file instanceof \Illuminate\Http\UploadedFile) continue;
                 if (!$file->isValid()) continue;
 
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('images'), $filename);
+                $filename = ImageHelper::uploadAndConvert($file, 'images', 1600, 85);
                 $images[] = 'images/' . $filename;
             }
         }
@@ -590,9 +742,9 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             'google_maps_link' => 'nullable|string|max:1000',
             'phone' => 'nullable|string|max:20',
             'facilities' => 'nullable|string',
-            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'image' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp',
+            'images.*' => 'file|max:10240|mimes:jpg,jpeg,png,avif,webp,heic,heif',
         ]);
 
         $data = $request->except(['image', 'images', 'remove_images', '_token', '_method']);
@@ -601,13 +753,13 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             $data['type'] = $data['name'];
         }
 
+        // ⭐ Cover (auto convert & compress)
         if ($request->hasFile('image')) {
             if ($business->image && $business->image != '1.avif' && file_exists(public_path('images/' . $business->image))) {
                 @unlink(public_path('images/' . $business->image));
             }
 
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
-            $request->file('image')->move(public_path('images'), $filename);
+            $filename = ImageHelper::uploadAndConvert($request->file('image'), 'images', 1920, 82);
             $data['image'] = $filename;
         }
 
@@ -616,7 +768,7 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             $currentImages = [];
         }
 
-        $currentImages = array_values(array_filter($currentImages, function($img) {
+        $currentImages = array_values(array_filter($currentImages, function ($img) {
             return is_string($img) && $img !== '' && file_exists(public_path($img));
         }));
 
@@ -630,14 +782,14 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
             }
         }
 
+        // ⭐ Galeri (auto convert & compress)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 if (!$file) continue;
                 if (!$file instanceof \Illuminate\Http\UploadedFile) continue;
                 if (!$file->isValid()) continue;
 
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('images'), $filename);
+                $filename = ImageHelper::uploadAndConvert($file, 'images', 1600, 85);
                 $currentImages[] = 'images/' . $filename;
             }
         }
@@ -697,7 +849,7 @@ Route::middleware(['auth', 'verified', 'user'])->prefix('user')->name('user.')->
 
         $current = $business->images;
         if (!is_array($current)) $current = [];
-        $current = array_values(array_filter($current, function($i) use ($imgPath) {
+        $current = array_values(array_filter($current, function ($i) use ($imgPath) {
             return trim((string) $i) !== $imgPath;
         }));
 

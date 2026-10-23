@@ -90,16 +90,16 @@
                 @endif
 
                 @php
-                    $galeriImages = $business->images;
-                    if (!is_array($galeriImages)) $galeriImages = [];
-                    $galeriImages = array_values(array_filter($galeriImages, fn($i) => is_string($i) && $i !== ''));
-                    $ytId = null;
-                    if (!empty($business->youtube_url)) {
-                        if (preg_match('/[?&]v=([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
-                        elseif (preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
-                        elseif (preg_match('/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
-                        elseif (preg_match('/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
-                    }
+                $galeriImages = $business->images;
+                if (!is_array($galeriImages)) $galeriImages = [];
+                $galeriImages = array_values(array_filter($galeriImages, fn($i) => is_string($i) && $i !== ''));
+                $ytId = null;
+                if (!empty($business->youtube_url)) {
+                if (preg_match('/[?&]v=([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
+                elseif (preg_match('/youtu\.be\/([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
+                elseif (preg_match('/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
+                elseif (preg_match('/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/', $business->youtube_url, $m)) $ytId = $m[1];
+                }
                 @endphp
 
                 <form action="{{ route('user.businesses.update', $business->id) }}" method="POST" enctype="multipart/form-data">
@@ -189,10 +189,10 @@
                                         <i class="fas fa-eye mr-1"></i> Preview:
                                     </p>
                                     <a id="youtubePreviewLink"
-                                       href="{{ $ytId ? 'https://www.youtube.com/watch?v=' . $ytId : '#' }}"
-                                       target="_blank" rel="noopener noreferrer"
-                                       class="relative block overflow-hidden rounded-lg group"
-                                       style="padding-bottom: 56.25%; height: 0;">
+                                        href="{{ $ytId ? 'https://www.youtube.com/watch?v=' . $ytId : '#' }}"
+                                        target="_blank" rel="noopener noreferrer"
+                                        class="relative block overflow-hidden rounded-lg group"
+                                        style="padding-bottom: 56.25%; height: 0;">
                                         <img id="youtubePreviewThumb"
                                             src="{{ $ytId ? 'https://img.youtube.com/vi/' . $ytId . '/maxresdefault.jpg' : '' }}"
                                             alt="Thumbnail"
@@ -258,7 +258,9 @@
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Gambar Cover Baru (Kosongkan jika tidak diganti)</label>
-                                <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
+                                <input type="file" name="image"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                                    class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                             </div>
 
                             <div class="mb-4 p-3 border-2 border-blue-200 bg-blue-50 rounded-lg">
@@ -306,8 +308,9 @@
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">
                                     Tambah Gambar Baru:
                                 </label>
-                                <input type="file" name="images[]" multiple accept="image/*"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
+                                <input type="file" name="images[]" multiple
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                                    class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                                 <p class="text-xs text-gray-500 mt-1">
                                     Bisa pilih banyak sekaligus. Max total 10 gambar.
                                 </p>
@@ -449,19 +452,34 @@
             if (!url) return null;
 
             let match = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             return null;
         }

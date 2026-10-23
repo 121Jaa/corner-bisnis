@@ -64,13 +64,15 @@
                 @php
                 $activeClass = 'bg-white/10 shadow-inner';
 
+                if (!function_exists('navClass')) {
                 function navClass($patterns, $activeClass) {
-                    foreach ((array) $patterns as $pattern) {
-                        if (request()->routeIs($pattern) || request()->is($pattern)) {
-                            return $activeClass;
-                        }
-                    }
-                    return '';
+                foreach ((array) $patterns as $pattern) {
+                if (request()->routeIs($pattern) || request()->is($pattern)) {
+                return $activeClass;
+                }
+                }
+                return '';
+                }
                 }
                 @endphp
 
@@ -158,52 +160,48 @@
                     <p class="mt-2 text-sm text-gray-600">Kelola text hero, gambar slideshow, logo navbar, daftar usaha, dan testimoni</p>
                 </div>
 
-                {{-- ========== ERROR & SUCCESS MESSAGE ========== --}}
+                {{-- ERROR & SUCCESS MESSAGE --}}
                 @if ($errors->any())
-                    <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
-                        <p class="font-bold mb-2"><i class="fas fa-exclamation-circle mr-2"></i>Ada yang salah:</p>
-                        <ul class="list-disc list-inside text-sm space-y-1">
-                            @foreach ($errors->all() as $err)
-                                <li>{{ $err }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+                    <p class="font-bold mb-2"><i class="fas fa-exclamation-circle mr-2"></i>Ada yang salah:</p>
+                    <ul class="list-disc list-inside text-sm space-y-1">
+                        @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="mb-6 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
-                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                    </div>
+                <div class="mb-6 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
+                    <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+                </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('error') }}
-                    </div>
+                <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('error') }}
+                </div>
                 @endif
 
                 <x-flash-message />
 
-                {{-- ========== FORM TEXT HERO + LOGO ========== --}}
-                <div class="mb-8 pb-8 border-b border-gray-200">
-                    <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
-                        <i class="fas fa-font mr-2"></i> Text Hero & Logo Navbar
-                    </h3>
+                {{-- ⭐⭐ SATU FORM BESAR BUAT SEMUA TEXT & STYLE ⭐⭐ --}}
+                <form action="{{ route('admin.hero.text') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
 
-                    <form action="{{ route('admin.hero.text') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
+                    {{-- ============ 1. LOGO NAVBAR ============ --}}
+                    <div class="mb-8 pb-8 border-b border-gray-200">
+                        <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
+                            <i class="fas fa-star mr-2"></i> Logo Navbar
+                        </h3>
 
-                        {{-- LOGO NAVBAR --}}
-                        <div class="mt-6 p-4 border-2 border-yellow-200 bg-yellow-50 rounded-xl">
-                            <h4 class="font-bold text-[#4a1e2b] mb-3">
-                                <i class="fas fa-star mr-1"></i> Logo Navbar
-                            </h4>
+                        @php
+                        $logoType = \App\Models\SiteContent::get('navbar_logo_type', 'text');
+                        $logoImage = \App\Models\SiteContent::get('navbar_logo_image');
+                        @endphp
 
-                            @php
-                            $logoType = \App\Models\SiteContent::get('navbar_logo_type', 'text');
-                            $logoImage = \App\Models\SiteContent::get('navbar_logo_image');
-                            @endphp
-
+                        <div class="p-4 border-2 border-yellow-200 bg-yellow-50 rounded-xl">
                             <div class="mb-3">
                                 <label class="block text-sm font-medium mb-2">Tipe Logo</label>
                                 <div class="flex gap-4">
@@ -229,153 +227,194 @@
 
                             <div id="logo-image-input" style="{{ $logoType === 'text' ? 'display:none' : '' }}">
                                 <label class="block text-sm font-medium mb-2">Upload Gambar Logo</label>
-
                                 @if ($logoImage && file_exists(public_path($logoImage)))
                                 <div class="mb-3 p-2 bg-white rounded-lg border border-gray-200 inline-block">
                                     <img src="{{ asset($logoImage) }}" class="h-12 object-contain" alt="Logo">
                                     <p class="text-xs text-gray-500 mt-1">Logo saat ini</p>
                                 </div>
                                 @endif
+                                <input type="file" name="navbar_logo_image" accept="image/jpeg,image/jpg,image/png,image/svg+xml,image/webp,image/avif"
+                                    class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ganti. Format PNG/SVG/JPG/WebP/AVIF. Maks 10MB.</p>
+                            </div>
+                        </div>
+                    </div>
 
-                                <input type="file" name="navbar_logo_image" accept="image/*"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
-                                <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ganti. Format PNG/SVG/JPG. Maks 2MB.</p>
+                    {{-- ============ 2. HERO TEXT ============ --}}
+                    <div class="mb-8 pb-8 border-b border-gray-200">
+                        <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
+                            <i class="fas fa-font mr-2"></i> Text Hero
+                        </h3>
+
+                        {{-- BADGE --}}
+                        <div class="mb-4 p-4 bg-purple-50 rounded-xl border-2 border-purple-200">
+                            <p class="text-sm font-bold text-[#4a1e2b] mb-3"><i class="fas fa-tag mr-1"></i> Badge</p>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium mb-2">Text Badge</label>
+                                <input type="text" name="hero_badge" value="{{ \App\Models\SiteContent::get('hero_badge', 'RT 04 Ngijo') }}"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 bg-white">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Font Size: <span id="badge-size-display" class="font-bold text-[#4a1e2b]">{{ \App\Models\SiteContent::get('hero_badge_size', 14) }}px</span></label>
+                                    <input type="range" name="hero_badge_size" min="8" max="40"
+                                        value="{{ \App\Models\SiteContent::get('hero_badge_size', 14) }}"
+                                        oninput="document.getElementById('badge-size-display').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Warna</label>
+                                    <div class="flex gap-2">
+                                        <input type="color" name="hero_badge_color" value="{{ \App\Models\SiteContent::get('hero_badge_color', '#fbbf24') }}"
+                                            class="w-16 h-10 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                        <input type="text" value="{{ \App\Models\SiteContent::get('hero_badge_color', '#fbbf24') }}"
+                                            oninput="document.querySelector('input[name=hero_badge_color]').value = this.value"
+                                            class="flex-1 border-2 border-gray-300 rounded-lg p-2 font-mono text-sm bg-white">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        {{-- TEXT HERO --}}
-                        <div class="mb-4 mt-4">
-                            <label class="block text-sm font-medium mb-2">Badge (text kecil di atas judul)</label>
-                            <input type="text" name="hero_badge" value="{{ \App\Models\SiteContent::get('hero_badge', 'RT 04 Ngijo') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                        {{-- JUDUL --}}
+                        <div class="mb-4 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+                            <p class="text-sm font-bold text-[#4a1e2b] mb-3"><i class="fas fa-heading mr-1"></i> Judul</p>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium mb-2">Text</label>
+                                <input type="text" name="hero_title" value="{{ \App\Models\SiteContent::get('hero_title', 'Corner Bisnis<br>RT 04 Ngijo') }}"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2 bg-white">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Font Size: <span id="d-hero-title" class="font-bold">{{ \App\Models\SiteContent::get('hero_title_size', 60) }}px</span></label>
+                                    <input type="range" name="hero_title_size" min="20" max="120"
+                                        value="{{ \App\Models\SiteContent::get('hero_title_size', 60) }}"
+                                        oninput="document.getElementById('d-hero-title').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Warna</label>
+                                    <div class="flex gap-2">
+                                        <input type="color" name="hero_title_color" value="{{ \App\Models\SiteContent::get('hero_title_color', '#ffffff') }}"
+                                            class="w-16 h-10 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                        <input type="text" value="{{ \App\Models\SiteContent::get('hero_title_color', '#ffffff') }}"
+                                            oninput="document.querySelector('input[name=hero_title_color]').value = this.value"
+                                            class="flex-1 border-2 border-gray-300 rounded-lg p-2 font-mono text-sm bg-white">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        {{-- SUBTITLE --}}
+                        <div class="p-4 bg-green-50 rounded-xl border-2 border-green-200">
+                            <p class="text-sm font-bold text-[#4a1e2b] mb-3"><i class="fas fa-align-left mr-1"></i> Subtitle</p>
+                            <div class="mb-3">
+                                <textarea name="hero_subtitle" rows="2" class="w-full border-2 border-gray-300 rounded-lg p-2 bg-white">{{ \App\Models\SiteContent::get('hero_subtitle', 'Temukan berbagai usaha...') }}</textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Font Size: <span id="d-hero-sub" class="font-bold">{{ \App\Models\SiteContent::get('hero_subtitle_size', 18) }}px</span></label>
+                                    <input type="range" name="hero_subtitle_size" min="10" max="40"
+                                        value="{{ \App\Models\SiteContent::get('hero_subtitle_size', 18) }}"
+                                        oninput="document.getElementById('d-hero-sub').textContent = this.value + 'px'"
+                                        class="w-full accent-[#4a1e2b]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Warna</label>
+                                    <div class="flex gap-2">
+                                        <input type="color" name="hero_subtitle_color" value="{{ \App\Models\SiteContent::get('hero_subtitle_color', '#e5e7eb') }}"
+                                            class="w-16 h-10 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                        <input type="text" value="{{ \App\Models\SiteContent::get('hero_subtitle_color', '#e5e7eb') }}"
+                                            oninput="document.querySelector('input[name=hero_subtitle_color]').value = this.value"
+                                            class="flex-1 border-2 border-gray-300 rounded-lg p-2 font-mono text-sm bg-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ============ 3. DAFTAR USAHA ============ --}}
+                    <div class="mb-8 pb-8 border-b border-gray-200">
+                        <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
+                            <i class="fas fa-store mr-2"></i> Text Section "Daftar Usaha"
+                        </h3>
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Judul Utama</label>
-                            <input type="text" name="hero_title" value="{{ \App\Models\SiteContent::get('hero_title', 'Corner Bisnis<br>RT 04 Ngijo') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
-                            <p class="text-xs text-gray-500 mt-1">Pakai <code class="bg-gray-100 px-1 rounded">&lt;br&gt;</code> buat baris baru</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Subtitle</label>
-                            <textarea name="hero_subtitle" rows="2"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">{{ \App\Models\SiteContent::get('hero_subtitle', 'Temukan berbagai usaha dan jasa yang dijalankan oleh warga RT 04 Ngijo.') }}</textarea>
-                        </div>
-
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" class="bg-[#4a1e2b] hover:bg-[#6b2d3f] text-white font-bold py-2 px-6 rounded-lg transition">
-                                <i class="fas fa-save mr-2"></i> Simpan Text & Logo
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                {{-- ========== FORM TEXT DAFTAR USAHA ========== --}}
-                <div class="mb-8 pb-8 border-b border-gray-200">
-                    <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
-                        <i class="fas fa-store mr-2"></i> Text Section "Daftar Usaha"
-                    </h3>
-
-                    <form action="{{ route('admin.business.text') }}" method="POST">
-                        @csrf
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Label Kecil (di atas judul)</label>
-                            <input type="text" name="business_label"
-                                value="{{ \App\Models\SiteContent::get('business_label', 'Explore') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                            <label class="block text-sm font-medium mb-2">Label Kecil</label>
+                            <input type="text" name="business_label" value="{{ \App\Models\SiteContent::get('business_label', 'Explore') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2">
                         </div>
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium mb-2">Judul Section</label>
-                            <input type="text" name="business_title"
-                                value="{{ \App\Models\SiteContent::get('business_title', 'Usaha Warga RT 04') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                            <input type="text" name="business_title" value="{{ \App\Models\SiteContent::get('business_title', 'Usaha Warga RT 04') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2">
                         </div>
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium mb-2">Subtitle</label>
-                            <textarea name="business_subtitle" rows="2"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">{{ \App\Models\SiteContent::get('business_subtitle', 'Jelajahi berbagai produk dan jasa yang dibuat langsung oleh warga sekitar.') }}</textarea>
+                            <textarea name="business_subtitle" rows="2" class="w-full border-2 border-gray-300 rounded-lg p-2">{{ \App\Models\SiteContent::get('business_subtitle', 'Jelajahi berbagai produk dan jasa yang dibuat langsung oleh warga sekitar.') }}</textarea>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-sm font-medium mb-2">Text Tombol "Lihat Detail"</label>
-                                <input type="text" name="business_view_detail"
-                                    value="{{ \App\Models\SiteContent::get('business_view_detail', 'Lihat Detail →') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <input type="text" name="business_view_detail" value="{{ \App\Models\SiteContent::get('business_view_detail', 'Lihat Detail →') }}"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-2">Text Tombol "Lihat Semua Usaha"</label>
-                                <input type="text" name="business_view_all_button"
-                                    value="{{ \App\Models\SiteContent::get('business_view_all_button', 'Lihat Semua Usaha') }}"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                <label class="block text-sm font-medium mb-2">Text Tombol "Lihat Semua"</label>
+                                <input type="text" name="business_view_all_button" value="{{ \App\Models\SiteContent::get('business_view_all_button', 'Lihat Semua Usaha') }}"
+                                    class="w-full border-2 border-gray-300 rounded-lg p-2">
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Text Kalau Kosong (empty state)</label>
-                            <input type="text" name="business_empty"
-                                value="{{ \App\Models\SiteContent::get('business_empty', 'Belum ada usaha yang terdaftar.') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                            <label class="block text-sm font-medium mb-2">Text Kosong (empty state)</label>
+                            <input type="text" name="business_empty" value="{{ \App\Models\SiteContent::get('business_empty', 'Belum ada usaha yang terdaftar.') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2">
                         </div>
+                    </div>
 
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" class="bg-[#4a1e2b] hover:bg-[#6b2d3f] text-white font-bold py-2 px-6 rounded-lg transition">
-                                <i class="fas fa-save mr-2"></i> Simpan Text Daftar Usaha
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                {{-- ========== FORM TEXT TESTIMONI ========== --}}
-                <div class="mb-8 pb-8 border-b border-gray-200">
-                    <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
-                        <i class="fas fa-star mr-2"></i> Text Section "Testimoni"
-                    </h3>
-
-                    <form action="{{ route('admin.testimonial.text') }}" method="POST">
-                        @csrf
+                    {{-- ============ 4. TESTIMONI ============ --}}
+                    <div class="mb-8 pb-8 border-b border-gray-200">
+                        <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
+                            <i class="fas fa-star mr-2"></i> Text Section "Testimoni"
+                        </h3>
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Label Kecil (di atas judul)</label>
-                            <input type="text" name="testimonial_label"
-                                value="{{ \App\Models\SiteContent::get('testimonial_label', 'Testimonials') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                            <label class="block text-sm font-medium mb-2">Label</label>
+                            <input type="text" name="testimonial_label" value="{{ \App\Models\SiteContent::get('testimonial_label', 'Testimonials') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2">
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Judul Section</label>
-                            <input type="text" name="testimonial_title"
-                                value="{{ \App\Models\SiteContent::get('testimonial_title', 'Apa Kata Mereka?') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                            <label class="block text-sm font-medium mb-2">Judul</label>
+                            <input type="text" name="testimonial_title" value="{{ \App\Models\SiteContent::get('testimonial_title', 'Apa Kata Mereka?') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2">
                         </div>
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium mb-2">Subtitle</label>
-                            <textarea name="testimonial_subtitle" rows="2"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">{{ \App\Models\SiteContent::get('testimonial_subtitle', 'Pilih usaha lain yang mungkin cocok untuk kamu.') }}</textarea>
+                            <textarea name="testimonial_subtitle" rows="2" class="w-full border-2 border-gray-300 rounded-lg p-2">{{ \App\Models\SiteContent::get('testimonial_subtitle', 'Pilih usaha lain yang mungkin cocok...') }}</textarea>
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Text Kalau Kosong (empty state)</label>
-                            <input type="text" name="testimonial_empty"
-                                value="{{ \App\Models\SiteContent::get('testimonial_empty', 'Belum ada testimoni.') }}"
-                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                            <label class="block text-sm font-medium mb-2">Text Kosong</label>
+                            <input type="text" name="testimonial_empty" value="{{ \App\Models\SiteContent::get('testimonial_empty', 'Belum ada testimoni.') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2">
                         </div>
+                    </div>
 
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" class="bg-[#4a1e2b] hover:bg-[#6b2d3f] text-white font-bold py-2 px-6 rounded-lg transition">
-                                <i class="fas fa-save mr-2"></i> Simpan Text Testimoni
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {{-- ⭐ TOMBOL SUBMIT UTAMA ⭐ --}}
+                    <div class="flex justify-end mt-6">
+                        <button type="submit" class="bg-[#4a1e2b] hover:bg-[#6b2d3f] text-white font-bold py-3 px-8 rounded-full transition shadow-lg">
+                            <i class="fas fa-save mr-2"></i> Simpan Semua Perubahan
+                        </button>
+                    </div>
+                </form>
 
-                {{-- ========== UPLOAD GAMBAR ========== --}}
-                <div class="mb-8 pb-8 border-b border-gray-200">
+                {{-- ========== UPLOAD GAMBAR SLIDESHOW (FORM TERPISAH) ========== --}}
+                <div class="mt-8 pt-8 border-t-2 border-gray-300">
                     <h3 class="font-bold text-lg text-[#4a1e2b] mb-4">
                         <i class="fas fa-cloud-upload-alt mr-2"></i> Upload Gambar Slideshow
                     </h3>
@@ -383,7 +422,7 @@
                     <form action="{{ route('admin.hero.add') }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-3 p-4 bg-gradient-to-r from-[#4a1e2b] to-[#7A384D] rounded-xl">
                         @csrf
                         <input type="file" name="image" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif" required
-                            class="flex-1 border-2 border-white/30 bg-white/10 text-white rounded-lg p-2 focus:outline-none focus:border-white file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-[#4a1e2b] file:font-semibold file:cursor-pointer">
+                            class="auto-compress flex-1 border-2 border-white/30 bg-white/10 text-white rounded-lg p-2 focus:outline-none focus:border-white file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-[#4a1e2b] file:font-semibold file:cursor-pointer">
                         <button type="submit" class="bg-yellow-500 hover:bg-yellow-400 text-[#4a1e2b] font-bold py-2 px-6 rounded-lg transition whitespace-nowrap">
                             <i class="fas fa-plus mr-1"></i> Tambah Gambar
                         </button>
@@ -391,12 +430,12 @@
                     <p class="text-xs text-gray-500 mt-2">
                         <i class="fas fa-info-circle mr-1"></i>
                         Upload 1 per 1. Gambar otomatis ke-add di urutan terakhir.
-                        Format: JPG, JPEG, PNG, WebP, AVIF. <strong>Maks 5MB per gambar. Maks 10 gambar.</strong>
+                        Format: JPG, JPEG, PNG, WebP, AVIF. <strong>Maks 10MB per gambar. Maks 10 gambar.</strong>
                     </p>
                 </div>
 
-                {{-- ========== DAFTAR GAMBAR ========== --}}
-                <div>
+                {{-- DAFTAR GAMBAR (tetap) --}}
+                <div class="mt-8">
                     <h3 class="font-semibold mb-3">
                         <i class="fas fa-images mr-2"></i> Gambar Slideshow
                         <span class="text-sm font-normal text-gray-500">({{ count($heroImages) }} gambar)</span>

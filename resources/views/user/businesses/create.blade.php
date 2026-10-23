@@ -165,8 +165,8 @@
                                         <i class="fas fa-eye mr-1"></i> Preview:
                                     </p>
                                     <a id="youtubePreviewLink" href="#" target="_blank" rel="noopener noreferrer"
-                                       class="relative block overflow-hidden rounded-lg group"
-                                       style="padding-bottom: 56.25%; height: 0;">
+                                        class="relative block overflow-hidden rounded-lg group"
+                                        style="padding-bottom: 56.25%; height: 0;">
                                         <img id="youtubePreviewThumb" src="" alt="Thumbnail"
                                             class="absolute inset-0 w-full h-full object-cover"
                                             onerror="this.src='https://img.youtube.com/vi/' + this.dataset.vid + '/hqdefault.jpg';">
@@ -218,8 +218,9 @@
                         <div>
                             <div class="mb-4">
                                 <label class="block text-sm font-medium mb-2">Gambar Cover (Utama)</label>
-                                <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
-                                <p class="text-xs text-gray-500 mt-1">1 gambar utama. Format: JPG, PNG. Maks 2MB</p>
+                                <input type="file" name="image"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                                    class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                             </div>
 
                             <div class="mb-4 p-3 border-2 border-blue-200 bg-blue-50 rounded-lg">
@@ -227,8 +228,9 @@
                                     <i class="fas fa-images text-blue-500 mr-1"></i>
                                     Galeri Foto Detail <span class="text-xs text-gray-500">(Max 10 gambar)</span>
                                 </label>
-                                <input type="file" name="images[]" multiple accept="image/*"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#1a3a2b]">
+                                <input type="file" name="images[]" multiple
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                                    class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                                 <p class="text-xs text-gray-500 mt-1">
                                     Bisa pilih banyak sekaligus (tahan <kbd class="bg-gray-200 px-1 rounded">Ctrl</kbd>). Maks 10 gambar.
                                 </p>
@@ -363,19 +365,34 @@
             if (!url) return null;
 
             let match = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
 
             return null;
         }

@@ -17,6 +17,7 @@
             width: 100%;
             z-index: 1;
         }
+
         @media (max-width: 768px) {
             #mapPreview {
                 height: 280px;
@@ -79,12 +80,12 @@
                 @php
                 $activeClass = 'bg-white/10 shadow-inner';
                 function navClass($patterns, $activeClass) {
-                    foreach ((array) $patterns as $pattern) {
-                        if (request()->routeIs($pattern) || request()->is($pattern)) {
-                            return $activeClass;
-                        }
-                    }
-                    return '';
+                foreach ((array) $patterns as $pattern) {
+                if (request()->routeIs($pattern) || request()->is($pattern)) {
+                return $activeClass;
+                }
+                }
+                return '';
                 }
                 @endphp
 
@@ -270,8 +271,8 @@
                                         <i class="fas fa-eye mr-1"></i> Preview:
                                     </p>
                                     <a id="youtubePreviewLink" href="#" target="_blank" rel="noopener noreferrer"
-                                       class="relative block overflow-hidden rounded-lg group"
-                                       style="padding-bottom: 56.25%; height: 0;">
+                                        class="relative block overflow-hidden rounded-lg group"
+                                        style="padding-bottom: 56.25%; height: 0;">
                                         <img id="youtubePreviewThumb" src="" alt="Thumbnail"
                                             class="absolute inset-0 w-full h-full object-cover"
                                             onerror="this.src='https://img.youtube.com/vi/' + this.dataset.vid + '/hqdefault.jpg';">
@@ -325,7 +326,7 @@
                                 <label class="block text-sm font-medium mb-2">Gambar Cover (Utama)</label>
                                 <input type="file" name="image"
                                     accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                                 <p class="text-xs text-gray-500 mt-1">
                                     Format: JPG, JPEG, PNG, WebP, AVIF. Maks 10MB.
                                 </p>
@@ -338,7 +339,7 @@
                                 </label>
                                 <input type="file" name="images[]" multiple
                                     accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
-                                    class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                                    class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                                 <p class="text-xs text-gray-500 mt-1">
                                     Bisa pilih banyak sekaligus (tahan <kbd class="bg-gray-200 px-1 rounded">Ctrl</kbd>).
                                     Maks 10 gambar, maks 10MB per gambar.
@@ -462,15 +463,30 @@
         function extractCoordsFromLink(url) {
             if (!url) return null;
             let match = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
             match = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
             match = url.match(/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
             match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
             match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            if (match) return {
+                lat: parseFloat(match[1]),
+                lng: parseFloat(match[2])
+            };
             return null;
         }
 

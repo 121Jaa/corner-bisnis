@@ -1,3 +1,5 @@
+import './image-compress';
+
 // Global confirm delete
 document.addEventListener('DOMContentLoaded', function() {
     // Auto-attach ke semua form delete

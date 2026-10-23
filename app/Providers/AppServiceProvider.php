@@ -32,8 +32,18 @@ class AppServiceProvider extends ServiceProvider
             ?>";
         });
 
-        // ⭐ Share $categories ke semua view — DENGAN TRY-CATCH
-        View::composer('*', function ($view) {
+        // ⭐ Share $categories HANYA ke view yang butuh (navbar, homepage, dll)
+        View::composer([
+            'partials.navbar',      // ← navbar butuh categories
+            'welcome',              // ← homepage butuh categories
+            'kategori',             // ← halaman kategori butuh
+            'all-businesses',       // ← daftar semua usaha
+            'kos', 'kuliner', 'laundry', 'jasa', 'toko', 'kerajinan',
+            'business-detail',
+            'kos-putra', 'kos-putri',
+            'jasa-travel', 'jasa-tukang', 'jasa-cat', 'jasa-sumur',
+            'kerajinan-anyaman', 'kerajinan-batik', 'kerajinan-ukiran',
+        ], function ($view) {
             try {
                 $categories = \App\Models\Category::with('businesses')->get();
             } catch (Throwable $e) {

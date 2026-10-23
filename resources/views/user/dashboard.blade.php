@@ -49,8 +49,6 @@
 
                 <x-flash-message />
 
-                <x-flash-message />
-
                 {{-- Statistik --}}
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <div class="bg-gradient-to-br from-[#1a3a2b] to-[#2b5a3f] rounded-xl p-5 text-white">

@@ -21,10 +21,9 @@ class AdminMiddleware
             return redirect()->route('login')->with('error', 'Akun kamu tidak aktif. Hubungi admin.');
         }
 
-        // ⭐ Kalau BUKAN admin, redirect ke dashboard user
+        // Kalau BUKAN admin, redirect ke dashboard user TANPA NOTIF ERROR
         if (!auth()->user()->isAdmin()) {
-            return redirect()->route('user.dashboard')
-                ->with('error', 'Akses ditolak. Halaman ini hanya untuk admin.');
+            return redirect()->route('user.dashboard');
         }
 
         return $next($request);

@@ -46,7 +46,7 @@
                     </button>
                 </div>
 
-                {{-- ⭐ USER INFO --}}
+                {{-- USER INFO --}}
                 <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-[#4a1e2b] font-bold text-sm shrink-0">
@@ -63,11 +63,12 @@
                     </div>
                 </div>
 
-                {{-- ⭐ HELPER FUNCTION UNTUK ACTIVE STATE --}}
+                {{-- HELPER FUNCTION --}}
                 @php
                 $activeClass = 'bg-white/10 shadow-inner';
                 $normalClass = '';
 
+                if (!function_exists('navClass')) {
                 function navClass($patterns, $activeClass) {
                 foreach ((array) $patterns as $pattern) {
                 if (request()->routeIs($pattern) || request()->is($pattern)) {
@@ -75,6 +76,7 @@
                 }
                 }
                 return '';
+                }
                 }
                 @endphp
 
@@ -108,7 +110,6 @@
                                 <i class="fas fa-star w-5 h-5"></i>
                                 <span class="text-sm font-semibold">Testimoni</span>
                             </a>
-                            {{-- ⭐ MENU USER BARU --}}
                             <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('admin/users*') ? 'bg-white/10 shadow-inner' : '' }}">
                                 <i class="fas fa-users w-5 h-5"></i>
                                 <span class="text-sm font-semibold">Kelola User</span>
@@ -160,57 +161,206 @@
                 <div class="mb-6">
                     <p class="text-xs lg:text-sm uppercase tracking-[0.3em] text-gray-400">Konten Web</p>
                     <h2 class="font-serif text-2xl lg:text-4xl font-bold text-[#4a1e2b]">Tentang Kami</h2>
-                    <p class="mt-2 text-sm text-gray-600">Kelola konten section "Our Story"</p>
+                    <p class="mt-2 text-sm text-gray-600">Kelola konten & style section "Our Story"</p>
                 </div>
+
+                {{-- ERROR MESSAGE --}}
+                @if ($errors->any())
+                    <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+                        <p class="font-bold mb-2"><i class="fas fa-exclamation-circle mr-2"></i>Ada yang salah:</p>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            @foreach ($errors->all() as $err)
+                                <li>{{ $err }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 <x-flash-message />
 
                 <form action="{{ route('admin.about.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">Label Section</label>
-                        <input type="text" name="about_label" value="{{ \App\Models\SiteContent::get('about_label', 'Design Philosophy') }}"
-                            class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                    {{-- ============ LABEL SECTION ============ --}}
+                    <div class="mb-6 p-4 bg-orange-50 rounded-xl border-2 border-orange-200">
+                        <p class="text-sm font-bold text-[#4a1e2b] mb-3">
+                            <i class="fas fa-tag mr-1"></i> Label Section
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-2">Text Label</label>
+                            <input type="text" name="about_label" value="{{ \App\Models\SiteContent::get('about_label', 'Design Philosophy') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">
+                                    Font Size: <span id="d-about-label" class="font-bold text-[#4a1e2b]">{{ \App\Models\SiteContent::get('about_label_size', 14) }}px</span>
+                                </label>
+                                <input type="range" name="about_label_size" min="8" max="40"
+                                    value="{{ \App\Models\SiteContent::get('about_label_size', 14) }}"
+                                    oninput="document.getElementById('d-about-label').textContent = this.value + 'px'"
+                                    class="w-full accent-[#4a1e2b]">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>8px</span><span>14px</span><span>40px</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Warna</label>
+                                <div class="flex gap-3 items-center">
+                                    <input type="color" name="about_label_color" value="{{ \App\Models\SiteContent::get('about_label_color', '#eab308') }}"
+                                        oninput="document.getElementById('c-about-label').value = this.value"
+                                        class="w-16 h-10 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                    <input type="text" id="c-about-label" value="{{ \App\Models\SiteContent::get('about_label_color', '#eab308') }}"
+                                        oninput="document.querySelector('input[name=about_label_color]').value = this.value"
+                                        class="flex-1 border-2 border-gray-300 rounded-lg p-2 font-mono text-sm bg-white">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">Judul</label>
-                        <input type="text" name="about_title" value="{{ \App\Models\SiteContent::get('about_title', 'Our Story') }}"
-                            class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                    {{-- ============ JUDUL ============ --}}
+                    <div class="mb-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+                        <p class="text-sm font-bold text-[#4a1e2b] mb-3">
+                            <i class="fas fa-heading mr-1"></i> Judul
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-2">Text Judul</label>
+                            <input type="text" name="about_title" value="{{ \App\Models\SiteContent::get('about_title', 'Our Story') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b] bg-white">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">
+                                    Font Size: <span id="d-about-title" class="font-bold text-[#4a1e2b]">{{ \App\Models\SiteContent::get('about_title_size', 48) }}px</span>
+                                </label>
+                                <input type="range" name="about_title_size" min="20" max="120"
+                                    value="{{ \App\Models\SiteContent::get('about_title_size', 48) }}"
+                                    oninput="document.getElementById('d-about-title').textContent = this.value + 'px'"
+                                    class="w-full accent-[#4a1e2b]">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>20px</span><span>48px</span><span>120px</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Warna</label>
+                                <div class="flex gap-3 items-center">
+                                    <input type="color" name="about_title_color" value="{{ \App\Models\SiteContent::get('about_title_color', '#ffffff') }}"
+                                        oninput="document.getElementById('c-about-title').value = this.value"
+                                        class="w-16 h-10 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                    <input type="text" id="c-about-title" value="{{ \App\Models\SiteContent::get('about_title_color', '#ffffff') }}"
+                                        oninput="document.querySelector('input[name=about_title_color]').value = this.value"
+                                        class="flex-1 border-2 border-gray-300 rounded-lg p-2 font-mono text-sm bg-white">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">Subtitle (italic)</label>
-                        <input type="text" name="about_subtitle" value="{{ \App\Models\SiteContent::get('about_subtitle', '') }}"
-                            class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                    {{-- ============ SUBTITLE ============ --}}
+                    <div class="mb-6 p-4 bg-yellow-50 rounded-xl border-2 border-yellow-200">
+                        <p class="text-sm font-bold text-[#4a1e2b] mb-3">
+                            <i class="fas fa-align-left mr-1"></i> Subtitle (italic)
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-2">Text Subtitle</label>
+                            <input type="text" name="about_subtitle" value="{{ \App\Models\SiteContent::get('about_subtitle', 'Contemporary Design. Crafted by Culture.') }}"
+                                class="w-full border-2 border-gray-300 rounded-lg p-2 bg-white">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">
+                                    Font Size: <span id="d-about-sub" class="font-bold text-[#4a1e2b]">{{ \App\Models\SiteContent::get('about_subtitle_size', 20) }}px</span>
+                                </label>
+                                <input type="range" name="about_subtitle_size" min="10" max="60"
+                                    value="{{ \App\Models\SiteContent::get('about_subtitle_size', 20) }}"
+                                    oninput="document.getElementById('d-about-sub').textContent = this.value + 'px'"
+                                    class="w-full accent-[#4a1e2b]">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>10px</span><span>20px</span><span>60px</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Warna</label>
+                                <div class="flex gap-3 items-center">
+                                    <input type="color" name="about_subtitle_color" value="{{ \App\Models\SiteContent::get('about_subtitle_color', '#fef08a') }}"
+                                        oninput="document.getElementById('c-about-sub').value = this.value"
+                                        class="w-16 h-10 border-2 border-gray-300 rounded-lg cursor-pointer bg-white">
+                                    <input type="text" id="c-about-sub" value="{{ \App\Models\SiteContent::get('about_subtitle_color', '#fef08a') }}"
+                                        oninput="document.querySelector('input[name=about_subtitle_color]').value = this.value"
+                                        class="flex-1 border-2 border-gray-300 rounded-lg p-2 font-mono text-sm bg-white">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">Deskripsi Paragraf 1</label>
-                        <textarea name="about_desc_1" rows="3" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">{{ \App\Models\SiteContent::get('about_desc_1', '') }}</textarea>
+                    {{-- ============ DESKRIPSI ============ --}}
+                    <div class="mb-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
+                        <p class="text-sm font-bold text-[#4a1e2b] mb-3">
+                            <i class="fas fa-file-alt mr-1"></i> Deskripsi
+                        </p>
+
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-2">Paragraf 1</label>
+                            <textarea name="about_desc_1" rows="3" class="w-full border-2 border-gray-300 rounded-lg p-2 bg-white">{{ \App\Models\SiteContent::get('about_desc_1', 'Setiap ruang di Corner Bisnis terinspirasi dari kerajinan tangan dan semangat gotong royong warga RT 04.') }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Paragraf 2</label>
+                            <textarea name="about_desc_2" rows="3" class="w-full border-2 border-gray-300 rounded-lg p-2 bg-white">{{ \App\Models\SiteContent::get('about_desc_2', 'Dinding maroon yang hangat, sentuhan kuning marigold, dan aksen kayu kenari berpadu menciptakan suasana yang terasa modern.') }}</textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">
+                                    Font Size: <span id="d-about-desc" class="font-bold text-[#4a1e2b]">{{ \App\Models\SiteContent::get('about_desc_size', 18) }}px</span>
+                                </label>
+                                <input type="range" name="about_desc_size" min="10" max="40"
+                                    value="{{ \App\Models\SiteContent::get('about_desc_size', 18) }}"
+                                    oninput="document.getElementById('d-about-desc').textContent = this.value + 'px'"
+                                    class="w-full accent-[#4a1e2b]">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>10px</span><span>18px</span><span>40px</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Warna</label>
+                                <div class="flex gap-3 items-center">
+                                    <input type="color" name="about_desc_color" value="{{ \App\Models\SiteContent::get('about_desc_color', '#d1d5db') }}"
+                                        oninput="document.getElementById('c-about-desc').value = this.value"
+                                        class="w-16 h-10 border-2 border-gray-300 rounded-lg cursor-pointer bg-xwhite">
+                                    <input type="text" id="c-about-desc" value="{{ \App\Models\SiteContent::get('about_desc_color', '#d1d5db') }}"
+                                        oninput="document.querySelector('input[name=about_desc_color]').value = this.value"
+                                        class="flex-1 border-2 border-gray-300 rounded-lg p-2 font-mono text-sm bg-white">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">Deskripsi Paragraf 2</label>
-                        <textarea name="about_desc_2" rows="3" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">{{ \App\Models\SiteContent::get('about_desc_2', '') }}</textarea>
-                    </div>
+                    {{-- ============ GAMBAR ============ --}}
+                    <div class="mb-6 p-4 bg-purple-50 rounded-xl border-2 border-purple-200">
+                        <p class="text-sm font-bold text-[#4a1e2b] mb-3">
+                            <i class="fas fa-image mr-1"></i> Gambar Section
+                        </p>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">Gambar Section</label>
                         @if (\App\Models\SiteContent::get('about_image'))
                         <div class="mb-3">
-                            <img src="{{ asset(\App\Models\SiteContent::get('about_image')) }}" class="h-40 rounded-lg">
+                            <img src="{{ asset(\App\Models\SiteContent::get('about_image')) }}" class="h-40 rounded-lg shadow">
                         </div>
                         @endif
-                        <input type="file" name="about_image" accept="image/*"
-                            class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
-                        <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak diganti</p>
+
+                        <input type="file" name="about_image" accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                            class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 bg-white">
+                        <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak diganti. Format JPG/PNG/WebP/AVIF. Maks 10MB.</p>
                     </div>
 
                     <div class="flex justify-end">
-                        <button type="submit" class="bg-[#4a1e2b] hover:bg-[#6b2d3f] text-white font-bold py-2 px-6 rounded-lg transition">
-                            <i class="fas fa-save mr-2"></i> Simpan
+                        <button type="submit" class="bg-[#4a1e2b] hover:bg-[#6b2d3f] text-white font-bold py-3 px-8 rounded-lg transition">
+                            <i class="fas fa-save mr-2"></i> Simpan Tentang Kami
                         </button>
                     </div>
                 </form>
@@ -222,7 +372,7 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
-            if (sidebar) sidebar.classList.toggle('-translate-x-1/2');
+            if (sidebar) sidebar.classList.toggle('-translate-x-full');
             if (overlay) overlay.classList.toggle('hidden');
         }
     </script>

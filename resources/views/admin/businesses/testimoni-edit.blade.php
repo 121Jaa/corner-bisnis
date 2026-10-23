@@ -76,7 +76,7 @@
                     </button>
                 </div>
 
-                {{-- ⭐ USER INFO --}}
+                {{-- USER INFO --}}
                 <div class="mb-6 p-3 rounded-xl bg-white/5 border border-white/10">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-[#4a1e2b] font-bold text-sm shrink-0">
@@ -93,11 +93,12 @@
                     </div>
                 </div>
 
-                {{-- ⭐ HELPER FUNCTION UNTUK ACTIVE STATE --}}
+                {{-- HELPER FUNCTION --}}
                 @php
                 $activeClass = 'bg-white/10 shadow-inner';
                 $normalClass = '';
 
+                if (!function_exists('navClass')) {
                 function navClass($patterns, $activeClass) {
                 foreach ((array) $patterns as $pattern) {
                 if (request()->routeIs($pattern) || request()->is($pattern)) {
@@ -105,6 +106,7 @@
                 }
                 }
                 return '';
+                }
                 }
                 @endphp
 
@@ -138,7 +140,6 @@
                                 <i class="fas fa-star w-5 h-5"></i>
                                 <span class="text-sm font-semibold">Testimoni</span>
                             </a>
-                            {{-- ⭐ MENU USER BARU --}}
                             <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all hover:bg-white/10 hover:translate-x-1 {{ request()->is('admin/users*') ? 'bg-white/10 shadow-inner' : '' }}">
                                 <i class="fas fa-users w-5 h-5"></i>
                                 <span class="text-sm font-semibold">Kelola User</span>
@@ -242,7 +243,7 @@
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium mb-2">Gambar Baru (Kosongkan jika tidak diganti)</label>
-                        <input type="file" name="image" class="w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
+                        <input type="file" name="image" class="auto-compress w-full border-2 border-gray-300 rounded-lg p-2 focus:outline-none focus:border-[#4a1e2b]">
                     </div>
 
                     <div class="flex flex-col sm:flex-row justify-end gap-3 mt-6 border-t border-gray-200 pt-6">
